@@ -52,12 +52,26 @@ const App = () => {
 
   const [bookingData, setBookingData] = useState({
     room_id: '',
-    guest_id: '',
+    guest_name: '',
+    guest_email: '',
+    guest_phone: '',
+    guest_address: '',
+    guest_id_proof: '',
     check_in: '',
     check_out: '',
-    guests_count: '',
+    guests_count: 1,
     special_requests: ''
   });
+
+  const [showStatusUpdate, setShowStatusUpdate] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [statusUpdateData, setStatusUpdateData] = useState({
+    status: '',
+    additional_charges: 0,
+    payment_method: 'cash',
+    notes: ''
+  });
+  const [paymentBalance, setPaymentBalance] = useState(null);
 
   const [expenseData, setExpenseData] = useState({
     category: '',

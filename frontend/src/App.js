@@ -143,13 +143,11 @@ export default App;
       // Set admin data
       setAdminData(response.data);
       
-      // Set authenticated state first (this will show the dashboard)
-      setIsAuthenticated(true);
+      // Load dashboard data first
+      await loadDashboardData();
       
-      // Load dashboard data in background (don't await)
-      loadDashboardData().catch(err => {
-        console.error('Dashboard data loading failed:', err);
-      });
+      // Then set authenticated state (this will trigger re-render)
+      setIsAuthenticated(true);
       
     } catch (error) {
       console.error('Login error:', error);

@@ -604,18 +604,16 @@ async def create_expense(expense_data: ExpenseCreate, token_data: dict = Depends
         expense_dict = expense_data.dict()
         expense_dict["created_by"] = token_data["admin_id"]
         
-        # Convert date object to datetime object for MongoDB compatibility
-        expense_dict["date"] = datetime.combine(expense_data.date, datetime.min.time())
-        
+        # Create expense object first
         expense_obj = Expense(**expense_dict)
         
-        # Convert back to date for the response model
-        expense_dict_for_response = expense_obj.dict()
-        expense_dict_for_response["date"] = expense_data.date
+        # Convert date object to datetime object for MongoDB compatibility
+        expense_dict_for_db = expense_obj.dict()
+        expense_dict_for_db["date"] = datetime.combine(expense_data.date, datetime.min.time())
         
-        await db.expenses.insert_one(expense_obj.dict())
+        await db.expenses.insert_one(expense_dict_for_db)
         
-        return Expense(**expense_dict_for_response)
+        return expense_obj
     except Exception as e:
         logger.error(f"Create expense error: {str(e)}")
         raise HTTPException(

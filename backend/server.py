@@ -391,10 +391,21 @@ async def create_booking(booking_data: BookingCreate):
         if not room:
             raise HTTPException(status_code=404, detail="Room not found")
         
-        # Check if guest exists
-        guest = await db.guests.find_one({"guest_id": booking_data.guest_id})
+        # Check if guest exists by email, if not create new guest
+        guest = await db.guests.find_one({"email": booking_data.guest_email})
         if not guest:
-            raise HTTPException(status_code=404, detail="Guest not found")
+            # Create new guest
+            guest_data = {
+                "guest_id": str(uuid.uuid4()),
+                "name": booking_data.guest_name,
+                "email": booking_data.guest_email,
+                "phone": booking_data.guest_phone,
+                "address": booking_data.guest_address,
+                "id_proof": booking_data.guest_id_proof,
+                "created_at": datetime.utcnow()
+            }
+            await db.guests.insert_one(guest_data)
+            guest = guest_data
         
         # Convert date objects to datetime objects for MongoDB compatibility
         check_in_datetime = datetime.combine(booking_data.check_in, datetime.min.time())
@@ -428,8 +439,20 @@ async def create_booking(booking_data: BookingCreate):
         
         total_amount = days * room["price_per_night"]
         
-        booking_dict = booking_data.dict()
-        booking_dict["total_amount"] = total_amount
+        # Create booking
+        booking_dict = {
+            "booking_id": str(uuid.uuid4()),
+            "room_id": booking_data.room_id,
+            "guest_id": guest["guest_id"],
+            "check_in": booking_data.check_in,
+            "check_out": booking_data.check_out,
+            "total_amount": total_amount,
+            "status": "confirmed",
+            "guests_count": booking_data.guests_count,
+            "special_requests": booking_data.special_requests,
+            "created_at": datetime.utcnow()
+        }
+        
         booking_obj = Booking(**booking_dict)
         
         # Convert date objects to datetime objects before saving to MongoDB

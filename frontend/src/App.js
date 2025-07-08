@@ -182,21 +182,57 @@ const App = () => {
     try {
       const response = await axios.post(`${API}/bookings`, {
         ...bookingData,
-        guests_count: parseInt(bookingData.guests_count)
+        guests_count: parseInt(bookingData.guests_count) || 1
       });
       setBookings([...bookings, response.data]);
       setShowAddBooking(false);
       setBookingData({
         room_id: '',
-        guest_id: '',
+        guest_name: '',
+        guest_email: '',
+        guest_phone: '',
+        guest_address: '',
+        guest_id_proof: '',
         check_in: '',
         check_out: '',
-        guests_count: '',
+        guests_count: 1,
         special_requests: ''
       });
       loadDashboardData();
     } catch (error) {
       alert('Error adding booking: ' + error.response?.data?.detail || 'Unknown error');
+    }
+  };
+
+  const handleStatusUpdate = async (booking, newStatus) => {
+    setSelectedBooking(booking);
+    setStatusUpdateData({
+      status: newStatus,
+      additional_charges: 0,
+      payment_method: 'cash',
+      notes: ''
+    });
+    setShowStatusUpdate(true);
+  };
+
+  const submitStatusUpdate = async () => {
+    try {
+      const response = await axios.put(`${API}/bookings/${selectedBooking.booking_id}/status`, statusUpdateData);
+      
+      if (statusUpdateData.status === 'checked_out') {
+        setPaymentBalance(response.data);
+      }
+      
+      setShowStatusUpdate(false);
+      loadDashboardData();
+      
+      if (statusUpdateData.status === 'checked_out' && response.data.balance_due > 0) {
+        alert(`Checkout completed! Balance due: $${response.data.balance_due}`);
+      } else if (statusUpdateData.status === 'checked_out') {
+        alert('Checkout completed successfully!');
+      }
+    } catch (error) {
+      alert('Error updating booking status: ' + error.response?.data?.detail || 'Unknown error');
     }
   };
 

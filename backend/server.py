@@ -532,6 +532,7 @@ async def get_bookings():
                 check_in=check_in,
                 check_out=check_out,
                 total_amount=booking["total_amount"],
+                advance_payment=booking.get("advance_payment", 0.0),
                 status=booking["status"],
                 guests_count=booking["guests_count"],
                 special_requests=booking.get("special_requests", ""),

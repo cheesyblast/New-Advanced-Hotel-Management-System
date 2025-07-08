@@ -193,7 +193,8 @@ const App = () => {
     try {
       const response = await axios.post(`${API}/bookings`, {
         ...bookingData,
-        guests_count: parseInt(bookingData.guests_count) || 1
+        guests_count: parseInt(bookingData.guests_count) || 1,
+        advance_payment: parseFloat(bookingData.advance_payment) || 0
       });
       setBookings([...bookings, response.data]);
       setShowAddBooking(false);
@@ -207,11 +208,68 @@ const App = () => {
         check_in: '',
         check_out: '',
         guests_count: 1,
-        special_requests: ''
+        special_requests: '',
+        advance_payment: 0
       });
       loadDashboardData();
     } catch (error) {
       alert('Error adding booking: ' + error.response?.data?.detail || 'Unknown error');
+    }
+  };
+
+  const handleEditRoom = (room) => {
+    setEditingRoom(room);
+    setRoomData({
+      room_number: room.room_number,
+      room_type: room.room_type,
+      price_per_night: room.price_per_night,
+      amenities: room.amenities.join(', '),
+      max_occupancy: room.max_occupancy,
+      description: room.description
+    });
+    setShowEditRoom(true);
+  };
+
+  const handleUpdateRoom = async (e) => {
+    e.preventDefault();
+    try {
+      const amenitiesArray = roomData.amenities.split(',').map(a => a.trim());
+      const response = await axios.put(`${API}/rooms/${editingRoom.room_id}`, {
+        ...roomData,
+        amenities: amenitiesArray,
+        price_per_night: parseFloat(roomData.price_per_night),
+        max_occupancy: parseInt(roomData.max_occupancy)
+      });
+      
+      setRooms(rooms.map(room => 
+        room.room_id === editingRoom.room_id ? response.data : room
+      ));
+      setShowEditRoom(false);
+      setEditingRoom(null);
+      setRoomData({
+        room_number: '',
+        room_type: 'single',
+        price_per_night: '',
+        amenities: '',
+        max_occupancy: '',
+        description: ''
+      });
+      loadDashboardData();
+    } catch (error) {
+      alert('Error updating room: ' + error.response?.data?.detail || 'Unknown error');
+    }
+  };
+
+  const handleUpdateSettings = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.put(`${API}/settings`, settings);
+      setSettings(response.data);
+      setShowSettings(false);
+      loadDashboardData();
+      alert('Settings updated successfully!');
+    } catch (error) {
+      alert('Error updating settings: ' + error.response?.data?.detail || 'Unknown error');
     }
   };
 

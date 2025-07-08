@@ -126,11 +126,14 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Complete room management with add, view, update, delete operations. Room availability checking implemented"
+      - working: true
+        agent: "testing"
+        comment: "Room creation, listing, and availability checking tested successfully. Duplicate room number validation works correctly. Room availability API returns available rooms for specified date ranges."
 
   - task: "Guest Management System"
     implemented: true

@@ -156,11 +156,14 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Complex booking system with availability checking, conflict detection, pricing calculation, and status management"
+      - working: true
+        agent: "testing"
+        comment: "Booking creation with availability checking and conflict detection tested successfully. The system correctly prevents double-booking of rooms and calculates the total amount based on room price and stay duration."
 
   - task: "Expense Management"
     implemented: true

@@ -845,6 +845,67 @@ async def update_settings(settings_data: SettingsUpdate, token_data: dict = Depe
             detail="Failed to update settings"
         )
 
+class RoomStatus(BaseModel):
+    room_id: str
+    room_number: str
+    room_type: str
+    status: str
+    guest_name: str = ""
+    check_out_date: Optional[date] = None
+
+@api_router.get("/dashboard/room-status", response_model=List[RoomStatus])
+async def get_room_status():
+    try:
+        rooms = await db.rooms.find().sort("room_number", 1).to_list(1000)
+        room_statuses = []
+        
+        for room in rooms:
+            room_status = RoomStatus(
+                room_id=room["room_id"],
+                room_number=room["room_number"],
+                room_type=room["room_type"],
+                status="available"
+            )
+            
+            # Check if room is currently occupied
+            current_date = datetime.utcnow().date()
+            current_booking = await db.bookings.find_one({
+                "room_id": room["room_id"],
+                "status": "checked_in",
+                "check_in": {"$lte": datetime.combine(current_date, datetime.min.time())},
+                "check_out": {"$gte": datetime.combine(current_date, datetime.min.time())}
+            })
+            
+            if current_booking:
+                guest = await db.guests.find_one({"guest_id": current_booking["guest_id"]})
+                room_status.status = "occupied"
+                room_status.guest_name = guest["name"] if guest else "Unknown"
+                # Convert datetime back to date if needed
+                check_out = current_booking["check_out"]
+                if isinstance(check_out, datetime):
+                    check_out = check_out.date()
+                room_status.check_out_date = check_out
+            else:
+                # Check if room has upcoming booking
+                upcoming_booking = await db.bookings.find_one({
+                    "room_id": room["room_id"],
+                    "status": "confirmed",
+                    "check_in": {"$gte": datetime.combine(current_date, datetime.min.time())}
+                })
+                
+                if upcoming_booking:
+                    room_status.status = "reserved"
+            
+            room_statuses.append(room_status)
+        
+        return room_statuses
+    except Exception as e:
+        logger.error(f"Get room status error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve room status"
+        )
+
 @api_router.get("/dashboard/stats", response_model=DashboardStats)
 async def get_dashboard_stats():
     try:

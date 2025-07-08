@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import "./App.css";
-import axios from "axios";
+import React from 'react';
+import SimpleLogin from './SimpleLogin';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+function App() {
+  return <SimpleLogin />;
+}
 
-const App = () => {
+export default App;
   const [currentView, setCurrentView] = useState('dashboard');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminData, setAdminData] = useState(null);

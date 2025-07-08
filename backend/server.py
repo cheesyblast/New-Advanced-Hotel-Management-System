@@ -105,6 +105,7 @@ class BookingWithDetails(BaseModel):
     check_in: date
     check_out: date
     total_amount: float
+    advance_payment: float
     status: str
     guests_count: int
     special_requests: str

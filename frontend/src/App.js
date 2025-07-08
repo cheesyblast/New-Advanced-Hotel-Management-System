@@ -435,7 +435,7 @@ const App = () => {
         {/* Navigation */}
         <nav className="mb-8">
           <div className="flex space-x-8">
-            {['dashboard', 'rooms', 'guests', 'bookings', 'expenses', 'sales', 'reports'].map((view) => (
+            {['dashboard', 'rooms', 'guests', 'bookings', 'expenses', 'sales', 'reports', 'settings'].map((view) => (
               <button
                 key={view}
                 onClick={() => setCurrentView(view)}

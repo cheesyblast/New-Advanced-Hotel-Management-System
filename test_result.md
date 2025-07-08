@@ -213,15 +213,18 @@ backend:
 frontend:
   - task: "Admin Authentication UI"
     implemented: true
-    working: true
+    working: false
     file: "App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Professional login interface with JWT token management"
+      - working: false
+        agent: "testing"
+        comment: "Login API works correctly, but frontend is not redirecting to dashboard after successful login. Backend returns a valid JWT token, but the frontend remains on the login page."
 
   - task: "Dashboard Interface"
     implemented: true

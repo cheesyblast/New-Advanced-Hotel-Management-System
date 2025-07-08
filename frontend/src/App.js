@@ -1249,7 +1249,340 @@ const App = () => {
           </div>
         )}
 
-        {/* Continue in next part for remaining modals... */}
+        {/* Add Booking Modal */}
+        {showAddBooking && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Booking</h3>
+              <form onSubmit={handleAddBooking} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Room</label>
+                  <select
+                    value={bookingData.room_id}
+                    onChange={(e) => setBookingData({...bookingData, room_id: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select Room</option>
+                    {rooms.map((room) => (
+                      <option key={room.room_id} value={room.room_id}>
+                        Room {room.room_number} ({room.room_type}) - {settings.currency_symbol}{room.price_per_night}/night
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="border-t pt-4">
+                  <h4 className="text-md font-medium text-gray-800 mb-3">Guest Information</h4>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Guest Name *</label>
+                    <input
+                      type="text"
+                      value={bookingData.guest_name}
+                      onChange={(e) => setBookingData({...bookingData, guest_name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={bookingData.guest_email}
+                      onChange={(e) => setBookingData({...bookingData, guest_email: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <input
+                      type="tel"
+                      value={bookingData.guest_phone}
+                      onChange={(e) => setBookingData({...bookingData, guest_phone: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <input
+                      type="text"
+                      value={bookingData.guest_address}
+                      onChange={(e) => setBookingData({...bookingData, guest_address: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">ID Proof</label>
+                    <input
+                      type="text"
+                      value={bookingData.guest_id_proof}
+                      onChange={(e) => setBookingData({...bookingData, guest_id_proof: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="border-t pt-4">
+                  <h4 className="text-md font-medium text-gray-800 mb-3">Booking Details</h4>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
+                    <input
+                      type="date"
+                      value={bookingData.check_in}
+                      onChange={(e) => setBookingData({...bookingData, check_in: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
+                    <input
+                      type="date"
+                      value={bookingData.check_out}
+                      onChange={(e) => setBookingData({...bookingData, check_out: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Number of Guests (optional)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={bookingData.guests_count}
+                      onChange={(e) => setBookingData({...bookingData, guests_count: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Advance Payment ({settings.currency_symbol})</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={bookingData.advance_payment}
+                      onChange={(e) => setBookingData({...bookingData, advance_payment: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Special Requests</label>
+                    <textarea
+                      value={bookingData.special_requests}
+                      onChange={(e) => setBookingData({...bookingData, special_requests: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows="3"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex space-x-3">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Add Booking
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddBooking(false)}
+                    className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Add Expense Modal */}
+        {showAddExpense && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Expense</h3>
+              <form onSubmit={handleAddExpense} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <select
+                    value={expenseData.category}
+                    onChange={(e) => setExpenseData({...expenseData, category: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="utilities">Utilities</option>
+                    <option value="staff">Staff</option>
+                    <option value="supplies">Supplies</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Amount ({settings.currency_symbol})</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={expenseData.amount}
+                    onChange={(e) => setExpenseData({...expenseData, amount: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    value={expenseData.description}
+                    onChange={(e) => setExpenseData({...expenseData, description: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="3"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                  <input
+                    type="date"
+                    value={expenseData.date}
+                    onChange={(e) => setExpenseData({...expenseData, date: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Add Expense
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddExpense(false)}
+                    className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Status Update Modal */}
+        {showStatusUpdate && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                {statusUpdateData.status === 'checked_out' ? 'Check Out Guest' : 
+                 statusUpdateData.status === 'cancelled' ? 'Cancel Booking' : 
+                 statusUpdateData.status === 'checked_in' ? 'Check In Guest' : 'Update Status'}
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <h4 className="font-medium text-gray-800">Booking Details</h4>
+                  <p className="text-sm text-gray-600">Guest: {selectedBooking?.guest_name}</p>
+                  <p className="text-sm text-gray-600">Room: {selectedBooking?.room_number}</p>
+                  <p className="text-sm text-gray-600">Total: {settings.currency_symbol}{selectedBooking?.total_amount}</p>
+                  <p className="text-sm text-gray-600">Advance Paid: {settings.currency_symbol}{selectedBooking?.advance_payment || 0}</p>
+                </div>
+                
+                {statusUpdateData.status === 'checked_in' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Additional Advance Payment ({settings.currency_symbol})</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={statusUpdateData.advance_payment_received}
+                      onChange={(e) => setStatusUpdateData({...statusUpdateData, advance_payment_received: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="0.00"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Any additional advance payment received during check-in</p>
+                  </div>
+                )}
+                
+                {statusUpdateData.status === 'checked_out' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Additional Charges</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={statusUpdateData.additional_charges}
+                      onChange={(e) => setStatusUpdateData({...statusUpdateData, additional_charges: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="0.00"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Mini bar, room service, damages, etc.</p>
+                  </div>
+                )}
+                
+                {(statusUpdateData.status === 'checked_out' || statusUpdateData.status === 'checked_in') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                    <select
+                      value={statusUpdateData.payment_method}
+                      onChange={(e) => setStatusUpdateData({...statusUpdateData, payment_method: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="cash">Cash</option>
+                      <option value="card">Credit Card</option>
+                      <option value="bank_transfer">Bank Transfer</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                )}
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <textarea
+                    value={statusUpdateData.notes}
+                    onChange={(e) => setStatusUpdateData({...statusUpdateData, notes: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="3"
+                    placeholder="Any additional notes..."
+                  />
+                </div>
+                
+                {statusUpdateData.status === 'checked_out' && statusUpdateData.additional_charges > 0 && (
+                  <div className="bg-blue-50 p-4 rounded-md">
+                    <h4 className="font-medium text-blue-800">Payment Summary</h4>
+                    <p className="text-sm text-blue-600">Room Charges: {settings.currency_symbol}{selectedBooking?.total_amount}</p>
+                    <p className="text-sm text-blue-600">Additional Charges: {settings.currency_symbol}{statusUpdateData.additional_charges}</p>
+                    <p className="text-sm font-medium text-blue-800">Total: {settings.currency_symbol}{(selectedBooking?.total_amount || 0) + statusUpdateData.additional_charges}</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={submitStatusUpdate}
+                  className={`flex-1 py-2 px-4 rounded-md focus:outline-none focus:ring-2 text-white ${
+                    statusUpdateData.status === 'cancelled' 
+                      ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' 
+                      : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                  }`}
+                >
+                  {statusUpdateData.status === 'checked_out' ? 'Complete Checkout' : 
+                   statusUpdateData.status === 'cancelled' ? 'Cancel Booking' : 
+                   statusUpdateData.status === 'checked_in' ? 'Complete Check In' : 'Update Status'}
+                </button>
+                <button
+                  onClick={() => setShowStatusUpdate(false)}
+                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

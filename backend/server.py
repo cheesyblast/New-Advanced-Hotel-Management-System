@@ -405,13 +405,20 @@ async def check_room_availability(availability_data: AvailabilityCheck):
     rooms = await db.rooms.find(rooms_query).to_list(1000)
     available_rooms = []
     
+    # Convert date objects to datetime objects for MongoDB compatibility
+    check_in_datetime = datetime.combine(availability_data.check_in, datetime.min.time())
+    check_out_datetime = datetime.combine(availability_data.check_out, datetime.min.time())
+    
     for room in rooms:
         # Check if room has conflicting bookings
         conflicting_bookings = await db.bookings.find({
             "room_id": room["room_id"],
             "status": {"$in": ["confirmed", "checked_in"]},
             "$or": [
-                {"check_in": {"$lte": availability_data.check_out}, "check_out": {"$gte": availability_data.check_in}}
+                {
+                    "check_in": {"$lte": check_out_datetime}, 
+                    "check_out": {"$gte": check_in_datetime}
+                }
             ]
         }).to_list(1000)
         

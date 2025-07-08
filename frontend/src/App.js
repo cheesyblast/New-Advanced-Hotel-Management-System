@@ -514,7 +514,7 @@ const App = () => {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">$</span>
+                        <span className="text-white font-bold text-sm">₹</span>
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -524,6 +524,48 @@ const App = () => {
                       </dl>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Room Status Grid */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Room Status - Quick View</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                  {roomStatuses.map((room) => (
+                    <div
+                      key={room.room_id}
+                      className={`relative p-4 rounded-lg border-2 text-center ${
+                        room.status === 'available' ? 'border-green-300 bg-green-50' :
+                        room.status === 'occupied' ? 'border-red-300 bg-red-50' :
+                        'border-yellow-300 bg-yellow-50'
+                      }`}
+                    >
+                      <div className="text-lg font-semibold text-gray-900">{room.room_number}</div>
+                      <div className="text-xs text-gray-600 capitalize">{room.room_type}</div>
+                      <div className={`mt-2 text-xs font-medium ${
+                        room.status === 'available' ? 'text-green-700' :
+                        room.status === 'occupied' ? 'text-red-700' :
+                        'text-yellow-700'
+                      }`}>
+                        {room.status === 'available' ? 'Available' :
+                         room.status === 'occupied' ? 'Occupied' : 'Reserved'}
+                      </div>
+                      {room.guest_name && (
+                        <div className="text-xs text-gray-500 mt-1 truncate">{room.guest_name}</div>
+                      )}
+                      {room.check_out_date && (
+                        <div className="text-xs text-gray-500">Out: {room.check_out_date}</div>
+                      )}
+                      {/* Status Icon */}
+                      <div className={`absolute top-1 right-1 w-3 h-3 rounded-full ${
+                        room.status === 'available' ? 'bg-green-400' :
+                        room.status === 'occupied' ? 'bg-red-400' :
+                        'bg-yellow-400'
+                      }`}></div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

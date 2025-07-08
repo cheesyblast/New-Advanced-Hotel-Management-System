@@ -671,7 +671,7 @@ const App = () => {
                       <div>
                         <h3 className="text-lg font-medium text-gray-900">Room {room.room_number}</h3>
                         <p className="text-sm text-gray-500 capitalize">{room.room_type}</p>
-                        <p className="text-lg font-semibold text-gray-900">${room.price_per_night}/night</p>
+                        <p className="text-lg font-semibold text-gray-900">{settings.currency_symbol}{room.price_per_night}/night</p>
                       </div>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         room.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -682,6 +682,14 @@ const App = () => {
                     <div className="mt-4">
                       <p className="text-sm text-gray-600">Max Occupancy: {room.max_occupancy}</p>
                       <p className="text-sm text-gray-600">Amenities: {room.amenities.join(', ')}</p>
+                    </div>
+                    <div className="mt-4">
+                      <button
+                        onClick={() => handleEditRoom(room)}
+                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      >
+                        Edit Room
+                      </button>
                     </div>
                   </div>
                 </div>

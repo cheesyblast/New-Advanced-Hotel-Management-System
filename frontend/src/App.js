@@ -278,6 +278,7 @@ const App = () => {
     setStatusUpdateData({
       status: newStatus,
       additional_charges: 0,
+      advance_payment_received: 0,
       payment_method: 'cash',
       notes: ''
     });

@@ -25,4 +25,4 @@ jq>=1.6.0
 typer>=0.9.0
 bcrypt>=4.3.0
 pyjwt>=2.10.1
-bson>=0.5.10
+# bson is already included in pymongo, removing standalone bson package

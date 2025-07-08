@@ -83,10 +83,14 @@ class Booking(BaseModel):
 
 class BookingCreate(BaseModel):
     room_id: str
-    guest_id: str
+    guest_name: str  # Changed from guest_id to guest_name
+    guest_email: str
+    guest_phone: str
+    guest_address: str = ""
+    guest_id_proof: str = ""
     check_in: date
     check_out: date
-    guests_count: int
+    guests_count: int = 1  # Made optional with default value
     special_requests: str = ""
 
 class BookingWithDetails(BaseModel):

@@ -268,11 +268,20 @@ const App = () => {
   };
 
   const updateBookingStatus = async (bookingId, newStatus) => {
-    try {
-      await axios.put(`${API}/bookings/${bookingId}/status?status=${newStatus}`);
-      loadDashboardData();
-    } catch (error) {
-      alert('Error updating booking status: ' + error.response?.data?.detail || 'Unknown error');
+    if (newStatus === 'checked_out' || newStatus === 'cancelled') {
+      handleStatusUpdate(bookings.find(b => b.booking_id === bookingId), newStatus);
+    } else {
+      try {
+        await axios.put(`${API}/bookings/${bookingId}/status`, {
+          status: newStatus,
+          additional_charges: 0,
+          payment_method: 'cash',
+          notes: ''
+        });
+        loadDashboardData();
+      } catch (error) {
+        alert('Error updating booking status: ' + error.response?.data?.detail || 'Unknown error');
+      }
     }
   };
 

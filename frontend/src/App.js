@@ -868,7 +868,7 @@ const App = () => {
             {/* Add Booking Modal */}
             {showAddBooking && (
               <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-                <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+                <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Booking</h3>
                   <form onSubmit={handleAddBooking} className="space-y-4">
                     <div>
@@ -882,66 +882,108 @@ const App = () => {
                         <option value="">Select Room</option>
                         {rooms.map((room) => (
                           <option key={room.room_id} value={room.room_id}>
-                            Room {room.room_number} ({room.room_type})
+                            Room {room.room_number} ({room.room_type}) - ${room.price_per_night}/night
                           </option>
                         ))}
                       </select>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Guest</label>
-                      <select
-                        value={bookingData.guest_id}
-                        onChange={(e) => setBookingData({...bookingData, guest_id: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      >
-                        <option value="">Select Guest</option>
-                        {guests.map((guest) => (
-                          <option key={guest.guest_id} value={guest.guest_id}>
-                            {guest.name} ({guest.email})
-                          </option>
-                        ))}
-                      </select>
+                    
+                    <div className="border-t pt-4">
+                      <h4 className="text-md font-medium text-gray-800 mb-3">Guest Information</h4>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Guest Name *</label>
+                        <input
+                          type="text"
+                          value={bookingData.guest_name}
+                          onChange={(e) => setBookingData({...bookingData, guest_name: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                        <input
+                          type="email"
+                          value={bookingData.guest_email}
+                          onChange={(e) => setBookingData({...bookingData, guest_email: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                        <input
+                          type="tel"
+                          value={bookingData.guest_phone}
+                          onChange={(e) => setBookingData({...bookingData, guest_phone: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                        <input
+                          type="text"
+                          value={bookingData.guest_address}
+                          onChange={(e) => setBookingData({...bookingData, guest_address: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">ID Proof</label>
+                        <input
+                          type="text"
+                          value={bookingData.guest_id_proof}
+                          onChange={(e) => setBookingData({...bookingData, guest_id_proof: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
-                      <input
-                        type="date"
-                        value={bookingData.check_in}
-                        onChange={(e) => setBookingData({...bookingData, check_in: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      />
+                    
+                    <div className="border-t pt-4">
+                      <h4 className="text-md font-medium text-gray-800 mb-3">Booking Details</h4>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
+                        <input
+                          type="date"
+                          value={bookingData.check_in}
+                          onChange={(e) => setBookingData({...bookingData, check_in: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
+                        <input
+                          type="date"
+                          value={bookingData.check_out}
+                          onChange={(e) => setBookingData({...bookingData, check_out: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Number of Guests (optional)</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={bookingData.guests_count}
+                          onChange={(e) => setBookingData({...bookingData, guests_count: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="1"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Special Requests</label>
+                        <textarea
+                          value={bookingData.special_requests}
+                          onChange={(e) => setBookingData({...bookingData, special_requests: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          rows="3"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
-                      <input
-                        type="date"
-                        value={bookingData.check_out}
-                        onChange={(e) => setBookingData({...bookingData, check_out: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Number of Guests</label>
-                      <input
-                        type="number"
-                        value={bookingData.guests_count}
-                        onChange={(e) => setBookingData({...bookingData, guests_count: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Special Requests</label>
-                      <textarea
-                        value={bookingData.special_requests}
-                        onChange={(e) => setBookingData({...bookingData, special_requests: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        rows="3"
-                      />
-                    </div>
+                    
                     <div className="flex space-x-3">
                       <button
                         type="submit"

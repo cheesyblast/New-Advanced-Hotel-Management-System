@@ -604,18 +604,39 @@ async def update_booking_status(booking_id: str, status_update: BookingStatusUpd
                 detail="Invalid booking status"
             )
         
-        # Update booking status
+        # Update booking status and advance payment if checking in
+        update_data = {"status": status_update.status}
+        if status_update.status == "checked_in" and status_update.advance_payment_received > 0:
+            current_advance = booking.get("advance_payment", 0.0)
+            update_data["advance_payment"] = current_advance + status_update.advance_payment_received
+        
         await db.bookings.update_one(
             {"booking_id": booking_id},
-            {"$set": {"status": status_update.status}}
+            {"$set": update_data}
         )
         
-        # Calculate payment balance for checkout
-        room_charges = booking["total_amount"]
+        # Get updated booking for calculations
+        updated_booking = await db.bookings.find_one({"booking_id": booking_id})
+        
+        # Calculate payment balance
+        room_charges = updated_booking["total_amount"]
         additional_charges = status_update.additional_charges
         total_amount = room_charges + additional_charges
-        paid_amount = room_charges  # Assuming room charges were paid on booking
-        balance_due = additional_charges
+        total_advance_paid = updated_booking.get("advance_payment", 0.0)
+        
+        # Add advance payment received during check-in
+        if status_update.status == "checked_in" and status_update.advance_payment_received > 0:
+            # Create advance payment sale record
+            advance_sale = Sale(
+                booking_id=booking_id,
+                amount=status_update.advance_payment_received,
+                payment_method=status_update.payment_method,
+                date=datetime.utcnow().date()
+            )
+            
+            sale_dict_for_db = advance_sale.dict()
+            sale_dict_for_db["date"] = datetime.combine(advance_sale.date, datetime.min.time())
+            await db.sales.insert_one(sale_dict_for_db)
         
         # If there are additional charges, create a new sale record
         if additional_charges > 0:
@@ -630,14 +651,20 @@ async def update_booking_status(booking_id: str, status_update: BookingStatusUpd
             sale_dict_for_db["date"] = datetime.combine(additional_sale.date, datetime.min.time())
             await db.sales.insert_one(sale_dict_for_db)
         
+        # Calculate final balance
+        balance_due = total_amount - total_advance_paid
+        if status_update.status == "checked_out":
+            balance_due = 0.0
+            total_advance_paid = total_amount
+        
         # Prepare payment balance response
         payment_balance = PaymentBalance(
             booking_id=booking_id,
             room_charges=room_charges,
             additional_charges=additional_charges,
             total_amount=total_amount,
-            paid_amount=paid_amount + (additional_charges if status_update.status == "checked_out" else 0),
-            balance_due=balance_due if status_update.status != "checked_out" else 0.0,
+            paid_amount=total_advance_paid,
+            balance_due=balance_due,
             payment_status="paid" if balance_due == 0 else "pending"
         )
         

@@ -11,11 +11,16 @@ const App = () => {
   const [adminData, setAdminData] = useState(null);
   const [dashboardStats, setDashboardStats] = useState(null);
   const [rooms, setRooms] = useState([]);
+  const [roomStatuses, setRoomStatuses] = useState([]);
   const [guests, setGuests] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [sales, setSales] = useState([]);
+  const [settings, setSettings] = useState({ currency: 'LKR', currency_symbol: 'Rs.', hotel_name: 'Hotel Management System' });
   const [showAddRoom, setShowAddRoom] = useState(false);
+  const [showEditRoom, setShowEditRoom] = useState(false);
+  const [editingRoom, setEditingRoom] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
   const [showAddGuest, setShowAddGuest] = useState(false);
   const [showAddBooking, setShowAddBooking] = useState(false);
   const [showAddExpense, setShowAddExpense] = useState(false);

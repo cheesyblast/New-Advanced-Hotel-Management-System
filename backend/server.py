@@ -156,8 +156,21 @@ class SaleCreate(BaseModel):
 class BookingStatusUpdate(BaseModel):
     status: str
     additional_charges: float = 0.0
+    advance_payment_received: float = 0.0  # For check-in advance
     payment_method: str = "cash"
     notes: str = ""
+
+class Settings(BaseModel):
+    setting_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    currency: str = "LKR"
+    currency_symbol: str = "Rs."
+    hotel_name: str = "Hotel Management System"
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SettingsUpdate(BaseModel):
+    currency: str
+    currency_symbol: str
+    hotel_name: str
 
 class PaymentBalance(BaseModel):
     booking_id: str

@@ -990,7 +990,266 @@ const App = () => {
           </div>
         )}
 
-        {/* Continue in next part for modals... */}
+        {/* Modals */}
+
+        {/* Add Room Modal */}
+        {showAddRoom && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Room</h3>
+              <form onSubmit={handleAddRoom} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
+                  <input
+                    type="text"
+                    value={roomData.room_number}
+                    onChange={(e) => setRoomData({...roomData, room_number: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Room Type</label>
+                  <select
+                    value={roomData.room_type}
+                    onChange={(e) => setRoomData({...roomData, room_type: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="single">Single</option>
+                    <option value="double">Double</option>
+                    <option value="triple">Triple</option>
+                    <option value="suite">Suite</option>
+                    <option value="deluxe">Deluxe</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Price per Night ({settings.currency_symbol})</label>
+                  <input
+                    type="number"
+                    value={roomData.price_per_night}
+                    onChange={(e) => setRoomData({...roomData, price_per_night: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Occupancy</label>
+                  <input
+                    type="number"
+                    value={roomData.max_occupancy}
+                    onChange={(e) => setRoomData({...roomData, max_occupancy: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Amenities (comma-separated)</label>
+                  <input
+                    type="text"
+                    value={roomData.amenities}
+                    onChange={(e) => setRoomData({...roomData, amenities: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="WiFi, TV, AC, Mini Bar"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    value={roomData.description}
+                    onChange={(e) => setRoomData({...roomData, description: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="3"
+                  />
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Add Room
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddRoom(false)}
+                    className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Room Modal */}
+        {showEditRoom && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Room</h3>
+              <form onSubmit={handleUpdateRoom} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
+                  <input
+                    type="text"
+                    value={roomData.room_number}
+                    onChange={(e) => setRoomData({...roomData, room_number: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Room Type</label>
+                  <select
+                    value={roomData.room_type}
+                    onChange={(e) => setRoomData({...roomData, room_type: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="single">Single</option>
+                    <option value="double">Double</option>
+                    <option value="triple">Triple</option>
+                    <option value="suite">Suite</option>
+                    <option value="deluxe">Deluxe</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Price per Night ({settings.currency_symbol})</label>
+                  <input
+                    type="number"
+                    value={roomData.price_per_night}
+                    onChange={(e) => setRoomData({...roomData, price_per_night: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Occupancy</label>
+                  <input
+                    type="number"
+                    value={roomData.max_occupancy}
+                    onChange={(e) => setRoomData({...roomData, max_occupancy: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Amenities (comma-separated)</label>
+                  <input
+                    type="text"
+                    value={roomData.amenities}
+                    onChange={(e) => setRoomData({...roomData, amenities: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="WiFi, TV, AC, Mini Bar"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    value={roomData.description}
+                    onChange={(e) => setRoomData({...roomData, description: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="3"
+                  />
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Update Room
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditRoom(false);
+                      setEditingRoom(null);
+                    }}
+                    className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Add Guest Modal */}
+        {showAddGuest && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Guest</h3>
+              <form onSubmit={handleAddGuest} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <input
+                    type="text"
+                    value={guestData.name}
+                    onChange={(e) => setGuestData({...guestData, name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={guestData.email}
+                    onChange={(e) => setGuestData({...guestData, email: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <input
+                    type="tel"
+                    value={guestData.phone}
+                    onChange={(e) => setGuestData({...guestData, phone: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <textarea
+                    value={guestData.address}
+                    onChange={(e) => setGuestData({...guestData, address: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="3"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ID Proof</label>
+                  <input
+                    type="text"
+                    value={guestData.id_proof}
+                    onChange={(e) => setGuestData({...guestData, id_proof: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    Add Guest
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddGuest(false)}
+                    className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Continue in next part for remaining modals... */}
       </div>
     </div>
   );

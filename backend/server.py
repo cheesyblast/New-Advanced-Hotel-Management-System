@@ -295,12 +295,19 @@ async def create_booking(booking_data: BookingCreate):
     if not guest:
         raise HTTPException(status_code=404, detail="Guest not found")
     
+    # Convert date objects to datetime objects for MongoDB compatibility
+    check_in_datetime = datetime.combine(booking_data.check_in, datetime.min.time())
+    check_out_datetime = datetime.combine(booking_data.check_out, datetime.min.time())
+    
     # Check room availability
     conflicting_bookings = await db.bookings.find({
         "room_id": booking_data.room_id,
         "status": {"$in": ["confirmed", "checked_in"]},
         "$or": [
-            {"check_in": {"$lte": booking_data.check_out}, "check_out": {"$gte": booking_data.check_in}}
+            {
+                "check_in": {"$lte": check_out_datetime}, 
+                "check_out": {"$gte": check_in_datetime}
+            }
         ]
     }).to_list(1000)
     
@@ -317,7 +324,13 @@ async def create_booking(booking_data: BookingCreate):
     booking_dict = booking_data.dict()
     booking_dict["total_amount"] = total_amount
     booking_obj = Booking(**booking_dict)
-    await db.bookings.insert_one(booking_obj.dict())
+    
+    # Convert date objects to datetime objects before saving to MongoDB
+    booking_dict_for_db = booking_obj.dict()
+    booking_dict_for_db["check_in"] = check_in_datetime
+    booking_dict_for_db["check_out"] = check_out_datetime
+    
+    await db.bookings.insert_one(booking_dict_for_db)
     
     # Create sale record
     sale_obj = Sale(
@@ -326,7 +339,12 @@ async def create_booking(booking_data: BookingCreate):
         payment_method="cash",
         date=booking_data.check_in
     )
-    await db.sales.insert_one(sale_obj.dict())
+    
+    # Convert date object to datetime object before saving to MongoDB
+    sale_dict_for_db = sale_obj.dict()
+    sale_dict_for_db["date"] = datetime.combine(sale_obj.date, datetime.min.time())
+    
+    await db.sales.insert_one(sale_dict_for_db)
     
     return booking_obj
 

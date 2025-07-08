@@ -520,7 +520,7 @@ const App = () => {
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
-                        <dd className="text-lg font-medium text-gray-900">${dashboardStats?.total_revenue || 0}</dd>
+                        <dd className="text-lg font-medium text-gray-900">{settings.currency_symbol}{dashboardStats?.total_revenue || 0}</dd>
                       </dl>
                     </div>
                   </div>

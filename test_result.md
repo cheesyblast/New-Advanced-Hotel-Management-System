@@ -186,11 +186,14 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Sales records automatically created from bookings"
+      - working: true
+        agent: "testing"
+        comment: "Sales tracking functionality is indirectly tested through the booking creation and dashboard statistics APIs. Sales records are automatically created when bookings are made."
 
   - task: "Dashboard Statistics"
     implemented: true

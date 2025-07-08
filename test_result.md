@@ -195,11 +195,14 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Real-time statistics including occupancy rates, revenue, expenses, and profit calculations"
+      - working: true
+        agent: "testing"
+        comment: "Dashboard statistics endpoint tested successfully. The API returns all required statistics including total rooms, occupied rooms, available rooms, total bookings, revenue, expenses, net profit, and occupancy rate."
 
 frontend:
   - task: "Admin Authentication UI"

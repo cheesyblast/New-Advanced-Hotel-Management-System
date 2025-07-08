@@ -865,6 +865,99 @@ const App = () => {
               </ul>
             </div>
 
+            {/* Status Update Modal */}
+            {showStatusUpdate && (
+              <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+                <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    {statusUpdateData.status === 'checked_out' ? 'Check Out Guest' : 
+                     statusUpdateData.status === 'cancelled' ? 'Cancel Booking' : 'Update Status'}
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 p-4 rounded-md">
+                      <h4 className="font-medium text-gray-800">Booking Details</h4>
+                      <p className="text-sm text-gray-600">Guest: {selectedBooking?.guest_name}</p>
+                      <p className="text-sm text-gray-600">Room: {selectedBooking?.room_number}</p>
+                      <p className="text-sm text-gray-600">Amount: ${selectedBooking?.total_amount}</p>
+                    </div>
+                    
+                    {statusUpdateData.status === 'checked_out' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Additional Charges</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={statusUpdateData.additional_charges}
+                          onChange={(e) => setStatusUpdateData({...statusUpdateData, additional_charges: parseFloat(e.target.value) || 0})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="0.00"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Mini bar, room service, damages, etc.</p>
+                      </div>
+                    )}
+                    
+                    {statusUpdateData.status === 'checked_out' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                        <select
+                          value={statusUpdateData.payment_method}
+                          onChange={(e) => setStatusUpdateData({...statusUpdateData, payment_method: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="cash">Cash</option>
+                          <option value="card">Credit Card</option>
+                          <option value="bank_transfer">Bank Transfer</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                    )}
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                      <textarea
+                        value={statusUpdateData.notes}
+                        onChange={(e) => setStatusUpdateData({...statusUpdateData, notes: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows="3"
+                        placeholder="Any additional notes..."
+                      />
+                    </div>
+                    
+                    {statusUpdateData.status === 'checked_out' && statusUpdateData.additional_charges > 0 && (
+                      <div className="bg-blue-50 p-4 rounded-md">
+                        <h4 className="font-medium text-blue-800">Payment Summary</h4>
+                        <p className="text-sm text-blue-600">Room Charges: ${selectedBooking?.total_amount}</p>
+                        <p className="text-sm text-blue-600">Additional Charges: ${statusUpdateData.additional_charges}</p>
+                        <p className="text-sm font-medium text-blue-800">Total: ${(selectedBooking?.total_amount || 0) + statusUpdateData.additional_charges}</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex space-x-3 mt-6">
+                    <button
+                      onClick={submitStatusUpdate}
+                      className={`flex-1 py-2 px-4 rounded-md focus:outline-none focus:ring-2 text-white ${
+                        statusUpdateData.status === 'cancelled' 
+                          ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' 
+                          : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                      }`}
+                    >
+                      {statusUpdateData.status === 'checked_out' ? 'Complete Checkout' : 
+                       statusUpdateData.status === 'cancelled' ? 'Cancel Booking' : 'Update Status'}
+                    </button>
+                    <button
+                      onClick={() => setShowStatusUpdate(false)}
+                      className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Add Booking Modal */}
             {showAddBooking && (
               <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">

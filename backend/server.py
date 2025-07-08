@@ -76,6 +76,7 @@ class Booking(BaseModel):
     check_in: date
     check_out: date
     total_amount: float
+    advance_payment: float = 0.0
     status: str = "confirmed"  # "confirmed", "cancelled", "checked_in", "checked_out"
     guests_count: int
     special_requests: str = ""

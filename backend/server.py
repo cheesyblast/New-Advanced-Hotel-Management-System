@@ -463,6 +463,7 @@ async def create_booking(booking_data: BookingCreate):
             "check_in": booking_data.check_in,
             "check_out": booking_data.check_out,
             "total_amount": total_amount,
+            "advance_payment": booking_data.advance_payment,
             "status": "confirmed",
             "guests_count": booking_data.guests_count,
             "special_requests": booking_data.special_requests,

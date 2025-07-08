@@ -775,6 +775,47 @@ async def get_sales():
         )
 
 # Dashboard endpoints
+# Settings endpoints
+@api_router.get("/settings", response_model=Settings)
+async def get_settings():
+    try:
+        settings = await db.settings.find_one()
+        if not settings:
+            # Create default settings
+            default_settings = Settings()
+            await db.settings.insert_one(default_settings.dict())
+            return default_settings
+        return Settings(**settings)
+    except Exception as e:
+        logger.error(f"Get settings error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve settings"
+        )
+
+@api_router.put("/settings", response_model=Settings)
+async def update_settings(settings_data: SettingsUpdate, token_data: dict = Depends(verify_token)):
+    try:
+        settings_dict = settings_data.dict()
+        settings_dict["updated_at"] = datetime.utcnow()
+        
+        # Update or create settings
+        existing_settings = await db.settings.find_one()
+        if existing_settings:
+            await db.settings.update_one({}, {"$set": settings_dict})
+            updated_settings = await db.settings.find_one()
+            return Settings(**updated_settings)
+        else:
+            new_settings = Settings(**settings_dict)
+            await db.settings.insert_one(new_settings.dict())
+            return new_settings
+    except Exception as e:
+        logger.error(f"Update settings error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update settings"
+        )
+
 @api_router.get("/dashboard/stats", response_model=DashboardStats)
 async def get_dashboard_stats():
     try:

@@ -88,20 +88,11 @@ const App = () => {
   });
 
   useEffect(() => {
-    console.log('App initializing...');
-    console.log('Backend URL:', BACKEND_URL);
-    console.log('API URL:', API);
-    
     const token = localStorage.getItem('hotel_token');
-    console.log('Stored token:', token ? 'Found' : 'Not found');
-    
     if (token) {
-      console.log('Token found, setting authenticated state');
       setIsAuthenticated(true);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       loadDashboardData();
-    } else {
-      console.log('No token found, staying on login page');
     }
   }, []);
 

@@ -98,27 +98,34 @@ const App = () => {
 
   const loadDashboardData = async () => {
     try {
-      const [statsRes, roomsRes, roomStatusRes, guestsRes, bookingsRes, expensesRes, salesRes, settingsRes] = await Promise.all([
-        axios.get(`${API}/dashboard/stats`),
-        axios.get(`${API}/rooms`),
-        axios.get(`${API}/dashboard/room-status`),
-        axios.get(`${API}/guests`),
-        axios.get(`${API}/bookings`),
-        axios.get(`${API}/expenses`),
-        axios.get(`${API}/sales`),
-        axios.get(`${API}/settings`)
-      ]);
-
+      // Load data step by step to isolate any issues
+      const statsRes = await axios.get(`${API}/dashboard/stats`);
       setDashboardStats(statsRes.data);
+      
+      const roomsRes = await axios.get(`${API}/rooms`);
       setRooms(roomsRes.data);
-      setRoomStatuses(roomStatusRes.data);
+      
+      const guestsRes = await axios.get(`${API}/guests`);
       setGuests(guestsRes.data);
+      
+      const bookingsRes = await axios.get(`${API}/bookings`);
       setBookings(bookingsRes.data);
+      
+      const expensesRes = await axios.get(`${API}/expenses`);
       setExpenses(expensesRes.data);
+      
+      const salesRes = await axios.get(`${API}/sales`);
       setSales(salesRes.data);
+      
+      const settingsRes = await axios.get(`${API}/settings`);
       setSettings(settingsRes.data);
+      
+      const roomStatusRes = await axios.get(`${API}/dashboard/room-status`);
+      setRoomStatuses(roomStatusRes.data);
+      
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      // Don't let data loading errors prevent login
     }
   };
 

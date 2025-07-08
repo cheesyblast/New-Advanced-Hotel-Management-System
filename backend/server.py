@@ -470,10 +470,14 @@ async def get_sales():
 async def get_dashboard_stats():
     # Get room statistics
     total_rooms = await db.rooms.count_documents({})
+    
+    # Convert current date to datetime for MongoDB compatibility
+    current_datetime = datetime.combine(datetime.utcnow().date(), datetime.min.time())
+    
     occupied_rooms = await db.bookings.count_documents({
         "status": "checked_in",
-        "check_in": {"$lte": datetime.utcnow().date()},
-        "check_out": {"$gte": datetime.utcnow().date()}
+        "check_in": {"$lte": current_datetime},
+        "check_out": {"$gte": current_datetime}
     })
     available_rooms = total_rooms - occupied_rooms
     

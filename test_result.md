@@ -270,6 +270,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "Guest registration and listing interface"
+      - working: true
+        agent: "testing"
+        comment: "Guest management UI is working correctly. The guests page displays existing guests with their details. The Add Guest modal opens correctly and allows users to input guest information."
 
   - task: "Booking Management UI"
     implemented: true

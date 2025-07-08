@@ -100,13 +100,22 @@ const App = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      console.log('Starting login with data:', loginData);
+      console.log('API URL:', `${API}/admin/login`);
+      
       const response = await axios.post(`${API}/admin/login`, loginData);
+      console.log('Login response:', response.data);
+      
       localStorage.setItem('hotel_token', response.data.access_token);
       setIsAuthenticated(true);
       setAdminData(response.data);
       axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
-      loadDashboardData();
+      
+      console.log('About to load dashboard data');
+      await loadDashboardData();
+      console.log('Dashboard data loaded, login complete');
     } catch (error) {
+      console.error('Login error:', error);
       alert('Login failed: ' + error.response?.data?.detail || 'Unknown error');
     }
   };

@@ -141,11 +141,14 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Guest registration and management system implemented with all CRUD operations"
+      - working: true
+        agent: "testing"
+        comment: "Guest registration and listing tested successfully. Guest data is properly stored and retrieved."
 
   - task: "Booking System"
     implemented: true

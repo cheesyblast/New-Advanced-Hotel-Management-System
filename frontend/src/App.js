@@ -634,7 +634,363 @@ const App = () => {
           </div>
         )}
 
-        {/* Continue in next part due to character limit... */}
+        {/* Rooms View */}
+        {currentView === 'rooms' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">Rooms</h2>
+              <button
+                onClick={() => setShowAddRoom(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Add Room
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {rooms.map((room) => (
+                <div key={room.room_id} className="bg-white overflow-hidden shadow rounded-lg">
+                  <img 
+                    src="https://images.unsplash.com/photo-1544097935-909a55214c81" 
+                    alt="Room" 
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-900">Room {room.room_number}</h3>
+                        <p className="text-sm text-gray-500 capitalize">{room.room_type}</p>
+                        <p className="text-lg font-semibold text-gray-900">{settings.currency_symbol}{room.price_per_night}/night</p>
+                      </div>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        room.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {room.status}
+                      </span>
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600">Max Occupancy: {room.max_occupancy}</p>
+                      <p className="text-sm text-gray-600">Amenities: {room.amenities.join(', ')}</p>
+                    </div>
+                    <div className="mt-4">
+                      <button
+                        onClick={() => handleEditRoom(room)}
+                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      >
+                        Edit Room
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Guests View */}
+        {currentView === 'guests' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">Guests</h2>
+              <button
+                onClick={() => setShowAddGuest(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Add Guest
+              </button>
+            </div>
+
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <ul className="divide-y divide-gray-200">
+                {guests.map((guest) => (
+                  <li key={guest.guest_id}>
+                    <div className="px-4 py-4 sm:px-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center">
+                              <span className="text-white font-medium text-sm">{guest.name.charAt(0)}</span>
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{guest.name}</div>
+                            <div className="text-sm text-gray-500">{guest.email}</div>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          <p>{guest.phone}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Bookings View */}
+        {currentView === 'bookings' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">Bookings</h2>
+              <button
+                onClick={() => setShowAddBooking(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Add Booking
+              </button>
+            </div>
+
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <ul className="divide-y divide-gray-200">
+                {bookings.map((booking) => (
+                  <li key={booking.booking_id}>
+                    <div className="px-4 py-4 sm:px-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0">
+                            <div className="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center">
+                              <span className="text-white font-medium text-sm">{booking.room_number}</span>
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{booking.guest_name}</div>
+                            <div className="text-sm text-gray-500">{booking.guest_email}</div>
+                            <div className="text-sm text-gray-500">
+                              {booking.check_in} to {booking.check_out}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <div className="text-sm text-gray-500">
+                            <p>{settings.currency_symbol}{booking.total_amount}</p>
+                            <p className="text-xs">Advance: {settings.currency_symbol}{booking.advance_payment || 0}</p>
+                          </div>
+                          <div className="flex flex-col space-y-2">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              booking.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                              booking.status === 'checked_in' ? 'bg-green-100 text-green-800' :
+                              booking.status === 'checked_out' ? 'bg-gray-100 text-gray-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {booking.status}
+                            </span>
+                            <div className="flex space-x-1">
+                              {booking.status === 'confirmed' && (
+                                <button
+                                  onClick={() => updateBookingStatus(booking.booking_id, 'checked_in')}
+                                  className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700"
+                                >
+                                  Check In
+                                </button>
+                              )}
+                              {booking.status === 'checked_in' && (
+                                <button
+                                  onClick={() => updateBookingStatus(booking.booking_id, 'checked_out')}
+                                  className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+                                >
+                                  Check Out
+                                </button>
+                              )}
+                              {(booking.status === 'confirmed' || booking.status === 'checked_in') && (
+                                <button
+                                  onClick={() => updateBookingStatus(booking.booking_id, 'cancelled')}
+                                  className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+                                >
+                                  Cancel
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Expenses View */}
+        {currentView === 'expenses' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">Expenses</h2>
+              <button
+                onClick={() => setShowAddExpense(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Add Expense
+              </button>
+            </div>
+
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <ul className="divide-y divide-gray-200">
+                {expenses.map((expense) => (
+                  <li key={expense.expense_id}>
+                    <div className="px-4 py-4 sm:px-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{expense.category}</div>
+                          <div className="text-sm text-gray-500">{expense.description}</div>
+                          <div className="text-sm text-gray-500">{expense.date}</div>
+                        </div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {settings.currency_symbol}{expense.amount}
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Sales View */}
+        {currentView === 'sales' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-900">Sales</h2>
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <ul className="divide-y divide-gray-200">
+                {sales.map((sale) => (
+                  <li key={sale.sale_id}>
+                    <div className="px-4 py-4 sm:px-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">Booking: {sale.booking_id}</div>
+                          <div className="text-sm text-gray-500">{sale.payment_method}</div>
+                          <div className="text-sm text-gray-500">{sale.date}</div>
+                        </div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {settings.currency_symbol}{sale.amount}
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Reports View */}
+        {currentView === 'reports' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-900">Reports</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="p-5">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Financial Summary</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Total Revenue</span>
+                      <span className="text-sm font-medium text-gray-900">{settings.currency_symbol}{dashboardStats?.total_revenue || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Total Expenses</span>
+                      <span className="text-sm font-medium text-gray-900">{settings.currency_symbol}{dashboardStats?.total_expenses || 0}</span>
+                    </div>
+                    <div className="flex justify-between border-t pt-3">
+                      <span className="text-sm font-medium text-gray-900">Net Profit</span>
+                      <span className={`text-sm font-medium ${
+                        (dashboardStats?.net_profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {settings.currency_symbol}{dashboardStats?.net_profit || 0}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="p-5">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Occupancy Statistics</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Total Rooms</span>
+                      <span className="text-sm font-medium text-gray-900">{dashboardStats?.total_rooms || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Occupied Rooms</span>
+                      <span className="text-sm font-medium text-gray-900">{dashboardStats?.occupied_rooms || 0}</span>
+                    </div>
+                    <div className="flex justify-between border-t pt-3">
+                      <span className="text-sm font-medium text-gray-900">Occupancy Rate</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {dashboardStats?.occupancy_rate?.toFixed(1) || 0}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Settings View */}
+        {currentView === 'settings' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
+            
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Currency Settings</h3>
+                <form onSubmit={handleUpdateSettings} className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Currency Code</label>
+                      <select
+                        value={settings.currency}
+                        onChange={(e) => setSettings({...settings, currency: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="LKR">LKR - Sri Lankan Rupee</option>
+                        <option value="USD">USD - US Dollar</option>
+                        <option value="EUR">EUR - Euro</option>
+                        <option value="GBP">GBP - British Pound</option>
+                        <option value="INR">INR - Indian Rupee</option>
+                        <option value="AUD">AUD - Australian Dollar</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Currency Symbol</label>
+                      <input
+                        type="text"
+                        value={settings.currency_symbol}
+                        onChange={(e) => setSettings({...settings, currency_symbol: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Rs."
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Hotel Name</label>
+                    <input
+                      type="text"
+                      value={settings.hotel_name}
+                      onChange={(e) => setSettings({...settings, hotel_name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Hotel Management System"
+                    />
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      type="submit"
+                      className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      Save Settings
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Continue in next part for modals... */}
       </div>
     </div>
   );

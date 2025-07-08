@@ -10,7 +10,6 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 import uuid
 from datetime import datetime, date, timedelta
-from bson import json_util
 import bcrypt
 import jwt
 from jwt.exceptions import InvalidTokenError
@@ -187,250 +186,204 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 # Auth endpoints
 @api_router.post("/admin/login")
 async def admin_login(admin_data: AdminLogin):
-    admin = await db.admins.find_one({"username": admin_data.username})
-    if not admin or not verify_password(admin_data.password, admin["password_hash"]):
+    try:
+        admin = await db.admins.find_one({"username": admin_data.username})
+        if not admin or not verify_password(admin_data.password, admin["password_hash"]):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid username or password"
+            )
+        
+        token = create_access_token({"admin_id": admin["admin_id"], "username": admin["username"]})
+        return {"access_token": token, "token_type": "bearer", "admin_id": admin["admin_id"]}
+    except Exception as e:
+        logger.error(f"Login error: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Login failed"
         )
-    
-    token = create_access_token({"admin_id": admin["admin_id"], "username": admin["username"]})
-    return {"access_token": token, "token_type": "bearer", "admin_id": admin["admin_id"]}
 
 @api_router.post("/admin/create", response_model=Admin)
 async def create_admin(admin_data: AdminCreate):
-    # Check if admin already exists
-    existing_admin = await db.admins.find_one({"username": admin_data.username})
-    if existing_admin:
+    try:
+        # Check if admin already exists
+        existing_admin = await db.admins.find_one({"username": admin_data.username})
+        if existing_admin:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Admin already exists"
+            )
+        
+        admin_dict = admin_data.dict()
+        admin_dict["password_hash"] = hash_password(admin_data.password)
+        admin_obj = Admin(**admin_dict)
+        await db.admins.insert_one(admin_obj.dict())
+        return admin_obj
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Create admin error: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Admin already exists"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create admin"
         )
-    
-    admin_dict = admin_data.dict()
-    admin_dict["password_hash"] = hash_password(admin_data.password)
-    admin_obj = Admin(**admin_dict)
-    await db.admins.insert_one(admin_obj.dict())
-    return admin_obj
 
 # Room endpoints
 @api_router.post("/rooms", response_model=Room)
 async def create_room(room_data: RoomCreate, token_data: dict = Depends(verify_token)):
-    # Check if room number already exists
-    existing_room = await db.rooms.find_one({"room_number": room_data.room_number})
-    if existing_room:
+    try:
+        # Check if room number already exists
+        existing_room = await db.rooms.find_one({"room_number": room_data.room_number})
+        if existing_room:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Room number {room_data.room_number} already exists"
+            )
+        
+        room_dict = room_data.dict()
+        room_obj = Room(**room_dict)
+        await db.rooms.insert_one(room_obj.dict())
+        return room_obj
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Create room error: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Room number already exists"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create room"
         )
-    
-    room_dict = room_data.dict()
-    room_obj = Room(**room_dict)
-    await db.rooms.insert_one(room_obj.dict())
-    return room_obj
 
 @api_router.get("/rooms", response_model=List[Room])
 async def get_rooms():
-    rooms = await db.rooms.find().to_list(1000)
-    return [Room(**room) for room in rooms]
+    try:
+        rooms = await db.rooms.find().to_list(1000)
+        return [Room(**room) for room in rooms]
+    except Exception as e:
+        logger.error(f"Get rooms error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve rooms"
+        )
 
 @api_router.get("/rooms/{room_id}", response_model=Room)
 async def get_room(room_id: str):
-    room = await db.rooms.find_one({"room_id": room_id})
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
-    return Room(**room)
+    try:
+        room = await db.rooms.find_one({"room_id": room_id})
+        if not room:
+            raise HTTPException(status_code=404, detail="Room not found")
+        return Room(**room)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get room error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve room"
+        )
 
 @api_router.put("/rooms/{room_id}", response_model=Room)
 async def update_room(room_id: str, room_data: RoomCreate, token_data: dict = Depends(verify_token)):
-    room = await db.rooms.find_one({"room_id": room_id})
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
-    
-    update_dict = room_data.dict()
-    await db.rooms.update_one({"room_id": room_id}, {"$set": update_dict})
-    
-    updated_room = await db.rooms.find_one({"room_id": room_id})
-    return Room(**updated_room)
+    try:
+        room = await db.rooms.find_one({"room_id": room_id})
+        if not room:
+            raise HTTPException(status_code=404, detail="Room not found")
+        
+        update_dict = room_data.dict()
+        await db.rooms.update_one({"room_id": room_id}, {"$set": update_dict})
+        
+        updated_room = await db.rooms.find_one({"room_id": room_id})
+        return Room(**updated_room)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Update room error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update room"
+        )
 
 @api_router.delete("/rooms/{room_id}")
 async def delete_room(room_id: str, token_data: dict = Depends(verify_token)):
-    room = await db.rooms.find_one({"room_id": room_id})
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
-    
-    await db.rooms.delete_one({"room_id": room_id})
-    return {"message": "Room deleted successfully"}
+    try:
+        room = await db.rooms.find_one({"room_id": room_id})
+        if not room:
+            raise HTTPException(status_code=404, detail="Room not found")
+        
+        await db.rooms.delete_one({"room_id": room_id})
+        return {"message": "Room deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Delete room error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete room"
+        )
 
 # Guest endpoints
 @api_router.post("/guests", response_model=Guest)
 async def create_guest(guest_data: GuestCreate):
-    guest_dict = guest_data.dict()
-    guest_obj = Guest(**guest_dict)
-    await db.guests.insert_one(guest_obj.dict())
-    return guest_obj
+    try:
+        guest_dict = guest_data.dict()
+        guest_obj = Guest(**guest_dict)
+        await db.guests.insert_one(guest_obj.dict())
+        return guest_obj
+    except Exception as e:
+        logger.error(f"Create guest error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create guest"
+        )
 
 @api_router.get("/guests", response_model=List[Guest])
 async def get_guests():
-    guests = await db.guests.find().to_list(1000)
-    return [Guest(**guest) for guest in guests]
+    try:
+        guests = await db.guests.find().to_list(1000)
+        return [Guest(**guest) for guest in guests]
+    except Exception as e:
+        logger.error(f"Get guests error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve guests"
+        )
 
 @api_router.get("/guests/{guest_id}", response_model=Guest)
 async def get_guest(guest_id: str):
-    guest = await db.guests.find_one({"guest_id": guest_id})
-    if not guest:
-        raise HTTPException(status_code=404, detail="Guest not found")
-    return Guest(**guest)
+    try:
+        guest = await db.guests.find_one({"guest_id": guest_id})
+        if not guest:
+            raise HTTPException(status_code=404, detail="Guest not found")
+        return Guest(**guest)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get guest error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve guest"
+        )
 
 # Booking endpoints
 @api_router.post("/bookings", response_model=Booking)
 async def create_booking(booking_data: BookingCreate):
-    # Check if room exists
-    room = await db.rooms.find_one({"room_id": booking_data.room_id})
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
-    
-    # Check if guest exists
-    guest = await db.guests.find_one({"guest_id": booking_data.guest_id})
-    if not guest:
-        raise HTTPException(status_code=404, detail="Guest not found")
-    
-    # Convert date objects to datetime objects for MongoDB compatibility
-    check_in_datetime = datetime.combine(booking_data.check_in, datetime.min.time())
-    check_out_datetime = datetime.combine(booking_data.check_out, datetime.min.time())
-    
-    # Check room availability
-    conflicting_bookings = await db.bookings.find({
-        "room_id": booking_data.room_id,
-        "status": {"$in": ["confirmed", "checked_in"]},
-        "$or": [
-            {
-                "check_in": {"$lte": check_out_datetime}, 
-                "check_out": {"$gte": check_in_datetime}
-            }
-        ]
-    }).to_list(1000)
-    
-    if conflicting_bookings:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Room is not available for the selected dates"
-        )
-    
-    # Calculate total amount
-    days = (booking_data.check_out - booking_data.check_in).days
-    total_amount = days * room["price_per_night"]
-    
-    booking_dict = booking_data.dict()
-    booking_dict["total_amount"] = total_amount
-    booking_obj = Booking(**booking_dict)
-    
-    # Convert date objects to datetime objects before saving to MongoDB
-    booking_dict_for_db = booking_obj.dict()
-    booking_dict_for_db["check_in"] = check_in_datetime
-    booking_dict_for_db["check_out"] = check_out_datetime
-    
-    await db.bookings.insert_one(booking_dict_for_db)
-    
-    # Create sale record
-    sale_obj = Sale(
-        booking_id=booking_obj.booking_id,
-        amount=total_amount,
-        payment_method="cash",
-        date=booking_data.check_in
-    )
-    
-    # Convert date object to datetime object before saving to MongoDB
-    sale_dict_for_db = sale_obj.dict()
-    sale_dict_for_db["date"] = datetime.combine(sale_obj.date, datetime.min.time())
-    
-    await db.sales.insert_one(sale_dict_for_db)
-    
-    return booking_obj
-
-@api_router.get("/bookings", response_model=List[BookingWithDetails])
-async def get_bookings():
-    bookings = await db.bookings.find().to_list(1000)
-    booking_details = []
-    
-    for booking in bookings:
-        room = await db.rooms.find_one({"room_id": booking["room_id"]})
-        guest = await db.guests.find_one({"guest_id": booking["guest_id"]})
+    try:
+        # Check if room exists
+        room = await db.rooms.find_one({"room_id": booking_data.room_id})
+        if not room:
+            raise HTTPException(status_code=404, detail="Room not found")
         
-        booking_detail = BookingWithDetails(
-            booking_id=booking["booking_id"],
-            room_number=room["room_number"] if room else "Unknown",
-            room_type=room["room_type"] if room else "Unknown",
-            guest_name=guest["name"] if guest else "Unknown",
-            guest_email=guest["email"] if guest else "Unknown",
-            guest_phone=guest["phone"] if guest else "Unknown",
-            check_in=booking["check_in"],
-            check_out=booking["check_out"],
-            total_amount=booking["total_amount"],
-            status=booking["status"],
-            guests_count=booking["guests_count"],
-            special_requests=booking.get("special_requests", ""),
-            created_at=booking["created_at"]
-        )
-        booking_details.append(booking_detail)
-    
-    return booking_details
-
-@api_router.get("/bookings/{booking_id}", response_model=BookingWithDetails)
-async def get_booking(booking_id: str):
-    booking = await db.bookings.find_one({"booking_id": booking_id})
-    if not booking:
-        raise HTTPException(status_code=404, detail="Booking not found")
-    
-    room = await db.rooms.find_one({"room_id": booking["room_id"]})
-    guest = await db.guests.find_one({"guest_id": booking["guest_id"]})
-    
-    return BookingWithDetails(
-        booking_id=booking["booking_id"],
-        room_number=room["room_number"] if room else "Unknown",
-        room_type=room["room_type"] if room else "Unknown",
-        guest_name=guest["name"] if guest else "Unknown",
-        guest_email=guest["email"] if guest else "Unknown",
-        guest_phone=guest["phone"] if guest else "Unknown",
-        check_in=booking["check_in"],
-        check_out=booking["check_out"],
-        total_amount=booking["total_amount"],
-        status=booking["status"],
-        guests_count=booking["guests_count"],
-        special_requests=booking.get("special_requests", ""),
-        created_at=booking["created_at"]
-    )
-
-@api_router.put("/bookings/{booking_id}/status")
-async def update_booking_status(booking_id: str, status: str, token_data: dict = Depends(verify_token)):
-    booking = await db.bookings.find_one({"booking_id": booking_id})
-    if not booking:
-        raise HTTPException(status_code=404, detail="Booking not found")
-    
-    await db.bookings.update_one(
-        {"booking_id": booking_id},
-        {"$set": {"status": status}}
-    )
-    return {"message": "Booking status updated successfully"}
-
-@api_router.post("/rooms/availability", response_model=List[Room])
-async def check_room_availability(availability_data: AvailabilityCheck):
-    # Find all rooms
-    rooms_query = {}
-    if availability_data.room_type:
-        rooms_query["room_type"] = availability_data.room_type
-    
-    rooms = await db.rooms.find(rooms_query).to_list(1000)
-    available_rooms = []
-    
-    # Convert date objects to datetime objects for MongoDB compatibility
-    check_in_datetime = datetime.combine(availability_data.check_in, datetime.min.time())
-    check_out_datetime = datetime.combine(availability_data.check_out, datetime.min.time())
-    
-    for room in rooms:
-        # Check if room has conflicting bookings
+        # Check if guest exists
+        guest = await db.guests.find_one({"guest_id": booking_data.guest_id})
+        if not guest:
+            raise HTTPException(status_code=404, detail="Guest not found")
+        
+        # Convert date objects to datetime objects for MongoDB compatibility
+        check_in_datetime = datetime.combine(booking_data.check_in, datetime.min.time())
+        check_out_datetime = datetime.combine(booking_data.check_out, datetime.min.time())
+        
+        # Check room availability
         conflicting_bookings = await db.bookings.find({
-            "room_id": room["room_id"],
+            "room_id": booking_data.room_id,
             "status": {"$in": ["confirmed", "checked_in"]},
             "$or": [
                 {
@@ -440,74 +393,348 @@ async def check_room_availability(availability_data: AvailabilityCheck):
             ]
         }).to_list(1000)
         
-        if not conflicting_bookings:
-            available_rooms.append(Room(**room))
-    
-    return available_rooms
+        if conflicting_bookings:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Room is not available for the selected dates"
+            )
+        
+        # Calculate total amount
+        days = (booking_data.check_out - booking_data.check_in).days
+        if days <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Check-out date must be after check-in date"
+            )
+        
+        total_amount = days * room["price_per_night"]
+        
+        booking_dict = booking_data.dict()
+        booking_dict["total_amount"] = total_amount
+        booking_obj = Booking(**booking_dict)
+        
+        # Convert date objects to datetime objects before saving to MongoDB
+        booking_dict_for_db = booking_obj.dict()
+        booking_dict_for_db["check_in"] = check_in_datetime
+        booking_dict_for_db["check_out"] = check_out_datetime
+        
+        await db.bookings.insert_one(booking_dict_for_db)
+        
+        # Create sale record
+        sale_obj = Sale(
+            booking_id=booking_obj.booking_id,
+            amount=total_amount,
+            payment_method="cash",
+            date=booking_data.check_in
+        )
+        
+        # Convert date object to datetime object before saving to MongoDB
+        sale_dict_for_db = sale_obj.dict()
+        sale_dict_for_db["date"] = datetime.combine(sale_obj.date, datetime.min.time())
+        
+        await db.sales.insert_one(sale_dict_for_db)
+        
+        return booking_obj
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Create booking error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create booking"
+        )
+
+@api_router.get("/bookings", response_model=List[BookingWithDetails])
+async def get_bookings():
+    try:
+        bookings = await db.bookings.find().to_list(1000)
+        booking_details = []
+        
+        for booking in bookings:
+            room = await db.rooms.find_one({"room_id": booking["room_id"]})
+            guest = await db.guests.find_one({"guest_id": booking["guest_id"]})
+            
+            # Convert datetime objects back to date objects if needed
+            check_in = booking["check_in"]
+            check_out = booking["check_out"]
+            
+            if isinstance(check_in, datetime):
+                check_in = check_in.date()
+            if isinstance(check_out, datetime):
+                check_out = check_out.date()
+            
+            booking_detail = BookingWithDetails(
+                booking_id=booking["booking_id"],
+                room_number=room["room_number"] if room else "Unknown",
+                room_type=room["room_type"] if room else "Unknown",
+                guest_name=guest["name"] if guest else "Unknown",
+                guest_email=guest["email"] if guest else "Unknown",
+                guest_phone=guest["phone"] if guest else "Unknown",
+                check_in=check_in,
+                check_out=check_out,
+                total_amount=booking["total_amount"],
+                status=booking["status"],
+                guests_count=booking["guests_count"],
+                special_requests=booking.get("special_requests", ""),
+                created_at=booking["created_at"]
+            )
+            booking_details.append(booking_detail)
+        
+        return booking_details
+    except Exception as e:
+        logger.error(f"Get bookings error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve bookings"
+        )
+
+@api_router.get("/bookings/{booking_id}", response_model=BookingWithDetails)
+async def get_booking(booking_id: str):
+    try:
+        booking = await db.bookings.find_one({"booking_id": booking_id})
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        
+        room = await db.rooms.find_one({"room_id": booking["room_id"]})
+        guest = await db.guests.find_one({"guest_id": booking["guest_id"]})
+        
+        # Convert datetime objects back to date objects if needed
+        check_in = booking["check_in"]
+        check_out = booking["check_out"]
+        
+        if isinstance(check_in, datetime):
+            check_in = check_in.date()
+        if isinstance(check_out, datetime):
+            check_out = check_out.date()
+        
+        return BookingWithDetails(
+            booking_id=booking["booking_id"],
+            room_number=room["room_number"] if room else "Unknown",
+            room_type=room["room_type"] if room else "Unknown",
+            guest_name=guest["name"] if guest else "Unknown",
+            guest_email=guest["email"] if guest else "Unknown",
+            guest_phone=guest["phone"] if guest else "Unknown",
+            check_in=check_in,
+            check_out=check_out,
+            total_amount=booking["total_amount"],
+            status=booking["status"],
+            guests_count=booking["guests_count"],
+            special_requests=booking.get("special_requests", ""),
+            created_at=booking["created_at"]
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get booking error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve booking"
+        )
+
+@api_router.put("/bookings/{booking_id}/status")
+async def update_booking_status(booking_id: str, status: str, token_data: dict = Depends(verify_token)):
+    try:
+        booking = await db.bookings.find_one({"booking_id": booking_id})
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        
+        if status not in ["confirmed", "cancelled", "checked_in", "checked_out"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid booking status"
+            )
+        
+        await db.bookings.update_one(
+            {"booking_id": booking_id},
+            {"$set": {"status": status}}
+        )
+        return {"message": "Booking status updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Update booking status error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update booking status"
+        )
+
+@api_router.post("/rooms/availability", response_model=List[Room])
+async def check_room_availability(availability_data: AvailabilityCheck):
+    try:
+        # Find all rooms
+        rooms_query = {}
+        if availability_data.room_type:
+            rooms_query["room_type"] = availability_data.room_type
+        
+        rooms = await db.rooms.find(rooms_query).to_list(1000)
+        available_rooms = []
+        
+        # Convert date objects to datetime objects for MongoDB compatibility
+        check_in_datetime = datetime.combine(availability_data.check_in, datetime.min.time())
+        check_out_datetime = datetime.combine(availability_data.check_out, datetime.min.time())
+        
+        for room in rooms:
+            # Check if room has conflicting bookings
+            conflicting_bookings = await db.bookings.find({
+                "room_id": room["room_id"],
+                "status": {"$in": ["confirmed", "checked_in"]},
+                "$or": [
+                    {
+                        "check_in": {"$lte": check_out_datetime}, 
+                        "check_out": {"$gte": check_in_datetime}
+                    }
+                ]
+            }).to_list(1000)
+            
+            if not conflicting_bookings:
+                available_rooms.append(Room(**room))
+        
+        return available_rooms
+    except Exception as e:
+        logger.error(f"Check room availability error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to check room availability"
+        )
 
 # Expense endpoints
 @api_router.post("/expenses", response_model=Expense)
 async def create_expense(expense_data: ExpenseCreate, token_data: dict = Depends(verify_token)):
-    expense_dict = expense_data.dict()
-    expense_dict["created_by"] = token_data["admin_id"]
-    expense_obj = Expense(**expense_dict)
-    await db.expenses.insert_one(expense_obj.dict())
-    return expense_obj
+    try:
+        expense_dict = expense_data.dict()
+        expense_dict["created_by"] = token_data["admin_id"]
+        
+        # Convert date object to datetime object for MongoDB compatibility
+        expense_dict["date"] = datetime.combine(expense_data.date, datetime.min.time())
+        
+        expense_obj = Expense(**expense_dict)
+        
+        # Convert back to date for the response model
+        expense_dict_for_response = expense_obj.dict()
+        expense_dict_for_response["date"] = expense_data.date
+        
+        await db.expenses.insert_one(expense_obj.dict())
+        
+        return Expense(**expense_dict_for_response)
+    except Exception as e:
+        logger.error(f"Create expense error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create expense: {str(e)}"
+        )
 
 @api_router.get("/expenses", response_model=List[Expense])
 async def get_expenses():
-    expenses = await db.expenses.find().to_list(1000)
-    return [Expense(**expense) for expense in expenses]
+    try:
+        expenses = await db.expenses.find().to_list(1000)
+        expense_list = []
+        
+        for expense in expenses:
+            # Convert datetime objects back to date objects if needed
+            expense_date = expense["date"]
+            if isinstance(expense_date, datetime):
+                expense_date = expense_date.date()
+            
+            expense_obj = Expense(
+                expense_id=expense["expense_id"],
+                category=expense["category"],
+                amount=expense["amount"],
+                description=expense["description"],
+                date=expense_date,
+                created_by=expense["created_by"],
+                created_at=expense["created_at"]
+            )
+            expense_list.append(expense_obj)
+        
+        return expense_list
+    except Exception as e:
+        logger.error(f"Get expenses error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve expenses"
+        )
 
 # Sales endpoints
 @api_router.get("/sales", response_model=List[Sale])
 async def get_sales():
-    sales = await db.sales.find().to_list(1000)
-    return [Sale(**sale) for sale in sales]
+    try:
+        sales = await db.sales.find().to_list(1000)
+        sale_list = []
+        
+        for sale in sales:
+            # Convert datetime objects back to date objects if needed
+            sale_date = sale["date"]
+            if isinstance(sale_date, datetime):
+                sale_date = sale_date.date()
+            
+            sale_obj = Sale(
+                sale_id=sale["sale_id"],
+                booking_id=sale["booking_id"],
+                amount=sale["amount"],
+                payment_method=sale["payment_method"],
+                date=sale_date,
+                created_at=sale["created_at"]
+            )
+            sale_list.append(sale_obj)
+        
+        return sale_list
+    except Exception as e:
+        logger.error(f"Get sales error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve sales"
+        )
 
 # Dashboard endpoints
 @api_router.get("/dashboard/stats", response_model=DashboardStats)
 async def get_dashboard_stats():
-    # Get room statistics
-    total_rooms = await db.rooms.count_documents({})
-    
-    # Convert current date to datetime for MongoDB compatibility
-    current_datetime = datetime.combine(datetime.utcnow().date(), datetime.min.time())
-    
-    occupied_rooms = await db.bookings.count_documents({
-        "status": "checked_in",
-        "check_in": {"$lte": current_datetime},
-        "check_out": {"$gte": current_datetime}
-    })
-    available_rooms = total_rooms - occupied_rooms
-    
-    # Get booking statistics
-    total_bookings = await db.bookings.count_documents({})
-    
-    # Get revenue statistics
-    sales = await db.sales.find().to_list(1000)
-    total_revenue = sum(sale["amount"] for sale in sales)
-    
-    # Get expense statistics
-    expenses = await db.expenses.find().to_list(1000)
-    total_expenses = sum(expense["amount"] for expense in expenses)
-    
-    # Calculate net profit
-    net_profit = total_revenue - total_expenses
-    
-    # Calculate occupancy rate
-    occupancy_rate = (occupied_rooms / total_rooms * 100) if total_rooms > 0 else 0
-    
-    return DashboardStats(
-        total_rooms=total_rooms,
-        occupied_rooms=occupied_rooms,
-        available_rooms=available_rooms,
-        total_bookings=total_bookings,
-        total_revenue=total_revenue,
-        total_expenses=total_expenses,
-        net_profit=net_profit,
-        occupancy_rate=occupancy_rate
-    )
+    try:
+        # Get room statistics
+        total_rooms = await db.rooms.count_documents({})
+        
+        # Convert current date to datetime for MongoDB compatibility
+        current_datetime = datetime.combine(datetime.utcnow().date(), datetime.min.time())
+        
+        occupied_rooms = await db.bookings.count_documents({
+            "status": "checked_in",
+            "check_in": {"$lte": current_datetime},
+            "check_out": {"$gte": current_datetime}
+        })
+        available_rooms = total_rooms - occupied_rooms
+        
+        # Get booking statistics
+        total_bookings = await db.bookings.count_documents({})
+        
+        # Get revenue statistics
+        sales = await db.sales.find().to_list(1000)
+        total_revenue = sum(sale["amount"] for sale in sales)
+        
+        # Get expense statistics
+        expenses = await db.expenses.find().to_list(1000)
+        total_expenses = sum(expense["amount"] for expense in expenses)
+        
+        # Calculate net profit
+        net_profit = total_revenue - total_expenses
+        
+        # Calculate occupancy rate
+        occupancy_rate = (occupied_rooms / total_rooms * 100) if total_rooms > 0 else 0
+        
+        return DashboardStats(
+            total_rooms=total_rooms,
+            occupied_rooms=occupied_rooms,
+            available_rooms=available_rooms,
+            total_bookings=total_bookings,
+            total_revenue=total_revenue,
+            total_expenses=total_expenses,
+            net_profit=net_profit,
+            occupancy_rate=occupancy_rate
+        )
+    except Exception as e:
+        logger.error(f"Get dashboard stats error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve dashboard statistics"
+        )
 
 @api_router.get("/")
 async def root():

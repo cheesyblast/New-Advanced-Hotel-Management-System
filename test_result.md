@@ -111,11 +111,14 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "JWT-based admin login with password hashing implemented. Admin user created with username: admin, password: admin123"
+      - working: true
+        agent: "testing"
+        comment: "Admin login endpoint tested successfully. Login with correct credentials returns JWT token, and login with incorrect credentials is properly rejected."
 
   - task: "Room Management CRUD"
     implemented: true

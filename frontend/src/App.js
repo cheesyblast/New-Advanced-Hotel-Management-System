@@ -98,6 +98,8 @@ const App = () => {
 
   const loadDashboardData = async () => {
     try {
+      console.log('Loading dashboard data - API base:', API);
+      
       const [statsRes, roomsRes, roomStatusRes, guestsRes, bookingsRes, expensesRes, salesRes, settingsRes] = await Promise.all([
         axios.get(`${API}/dashboard/stats`),
         axios.get(`${API}/rooms`),
@@ -109,6 +111,11 @@ const App = () => {
         axios.get(`${API}/settings`)
       ]);
 
+      console.log('Dashboard stats:', statsRes.data);
+      console.log('Rooms:', roomsRes.data);
+      console.log('Room statuses:', roomStatusRes.data);
+      console.log('Settings:', settingsRes.data);
+
       setDashboardStats(statsRes.data);
       setRooms(roomsRes.data);
       setRoomStatuses(roomStatusRes.data);
@@ -117,8 +124,11 @@ const App = () => {
       setExpenses(expensesRes.data);
       setSales(salesRes.data);
       setSettings(settingsRes.data);
+      
+      console.log('All data loaded successfully');
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      console.error('Error details:', error.response);
     }
   };
 

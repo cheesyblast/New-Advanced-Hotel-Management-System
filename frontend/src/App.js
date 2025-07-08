@@ -133,11 +133,22 @@ const App = () => {
     e.preventDefault();
     try {
       const response = await axios.post(`${API}/admin/login`, loginData);
+      
+      // Store token
       localStorage.setItem('hotel_token', response.data.access_token);
-      setIsAuthenticated(true);
-      setAdminData(response.data);
+      
+      // Set axios header
       axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
+      
+      // Set admin data
+      setAdminData(response.data);
+      
+      // Load dashboard data first
       await loadDashboardData();
+      
+      // Then set authenticated state (this will trigger re-render)
+      setIsAuthenticated(true);
+      
     } catch (error) {
       console.error('Login error:', error);
       alert('Login failed: ' + (error.response?.data?.detail || error.message || 'Unknown error'));

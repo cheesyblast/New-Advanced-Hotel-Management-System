@@ -1530,6 +1530,86 @@ const App = () => {
             </div>
           </div>
         )}
+
+        {/* Settings View */}
+        {currentView === 'settings' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
+            
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Currency Settings</h3>
+                <form onSubmit={handleUpdateSettings} className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Currency Code</label>
+                      <select
+                        value={settings.currency}
+                        onChange={(e) => setSettings({...settings, currency: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="LKR">LKR - Sri Lankan Rupee</option>
+                        <option value="USD">USD - US Dollar</option>
+                        <option value="EUR">EUR - Euro</option>
+                        <option value="GBP">GBP - British Pound</option>
+                        <option value="INR">INR - Indian Rupee</option>
+                        <option value="AUD">AUD - Australian Dollar</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Currency Symbol</label>
+                      <input
+                        type="text"
+                        value={settings.currency_symbol}
+                        onChange={(e) => setSettings({...settings, currency_symbol: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Rs."
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Hotel Name</label>
+                    <input
+                      type="text"
+                      value={settings.hotel_name}
+                      onChange={(e) => setSettings({...settings, hotel_name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Hotel Management System"
+                    />
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      type="submit"
+                      className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      Save Settings
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Current Settings</h3>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Currency</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{settings.currency}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Symbol</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{settings.currency_symbol}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Hotel Name</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{settings.hotel_name}</dd>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

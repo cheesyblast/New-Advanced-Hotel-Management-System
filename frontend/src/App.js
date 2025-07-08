@@ -17,11 +17,72 @@ const App = () => {
   const [expenses, setExpenses] = useState([]);
   const [sales, setSales] = useState([]);
   const [settings, setSettings] = useState({ currency: 'LKR', currency_symbol: 'Rs.', hotel_name: 'Hotel Management System' });
+  const [showAddRoom, setShowAddRoom] = useState(false);
+  const [showEditRoom, setShowEditRoom] = useState(false);
+  const [editingRoom, setEditingRoom] = useState(null);
+  const [showAddGuest, setShowAddGuest] = useState(false);
+  const [showAddBooking, setShowAddBooking] = useState(false);
+  const [showAddExpense, setShowAddExpense] = useState(false);
+  const [showStatusUpdate, setShowStatusUpdate] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [availableRooms, setAvailableRooms] = useState([]);
+  const [availabilityDates, setAvailabilityDates] = useState({
+    check_in: '',
+    check_out: '',
+    room_type: ''
+  });
 
   // Authentication
   const [loginData, setLoginData] = useState({
     username: '',
     password: ''
+  });
+
+  // Form data
+  const [roomData, setRoomData] = useState({
+    room_number: '',
+    room_type: 'single',
+    price_per_night: '',
+    amenities: '',
+    max_occupancy: '',
+    description: ''
+  });
+
+  const [guestData, setGuestData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    id_proof: ''
+  });
+
+  const [bookingData, setBookingData] = useState({
+    room_id: '',
+    guest_name: '',
+    guest_email: '',
+    guest_phone: '',
+    guest_address: '',
+    guest_id_proof: '',
+    check_in: '',
+    check_out: '',
+    guests_count: 1,
+    special_requests: '',
+    advance_payment: 0
+  });
+
+  const [expenseData, setExpenseData] = useState({
+    category: '',
+    amount: '',
+    description: '',
+    date: ''
+  });
+
+  const [statusUpdateData, setStatusUpdateData] = useState({
+    status: '',
+    additional_charges: 0,
+    advance_payment_received: 0,
+    payment_method: 'cash',
+    notes: ''
   });
 
   useEffect(() => {
@@ -87,6 +148,200 @@ const App = () => {
     setIsAuthenticated(false);
     setAdminData(null);
     delete axios.defaults.headers.common['Authorization'];
+  };
+
+  const handleAddRoom = async (e) => {
+    e.preventDefault();
+    try {
+      const amenitiesArray = roomData.amenities.split(',').map(a => a.trim());
+      const response = await axios.post(`${API}/rooms`, {
+        ...roomData,
+        amenities: amenitiesArray,
+        price_per_night: parseFloat(roomData.price_per_night),
+        max_occupancy: parseInt(roomData.max_occupancy)
+      });
+      setRooms([...rooms, response.data]);
+      setShowAddRoom(false);
+      setRoomData({
+        room_number: '',
+        room_type: 'single',
+        price_per_night: '',
+        amenities: '',
+        max_occupancy: '',
+        description: ''
+      });
+      loadDashboardData();
+    } catch (error) {
+      alert('Error adding room: ' + error.response?.data?.detail || 'Unknown error');
+    }
+  };
+
+  const handleEditRoom = (room) => {
+    setEditingRoom(room);
+    setRoomData({
+      room_number: room.room_number,
+      room_type: room.room_type,
+      price_per_night: room.price_per_night,
+      amenities: room.amenities.join(', '),
+      max_occupancy: room.max_occupancy,
+      description: room.description
+    });
+    setShowEditRoom(true);
+  };
+
+  const handleUpdateRoom = async (e) => {
+    e.preventDefault();
+    try {
+      const amenitiesArray = roomData.amenities.split(',').map(a => a.trim());
+      const response = await axios.put(`${API}/rooms/${editingRoom.room_id}`, {
+        ...roomData,
+        amenities: amenitiesArray,
+        price_per_night: parseFloat(roomData.price_per_night),
+        max_occupancy: parseInt(roomData.max_occupancy)
+      });
+      
+      setRooms(rooms.map(room => 
+        room.room_id === editingRoom.room_id ? response.data : room
+      ));
+      setShowEditRoom(false);
+      setEditingRoom(null);
+      setRoomData({
+        room_number: '',
+        room_type: 'single',
+        price_per_night: '',
+        amenities: '',
+        max_occupancy: '',
+        description: ''
+      });
+      loadDashboardData();
+    } catch (error) {
+      alert('Error updating room: ' + error.response?.data?.detail || 'Unknown error');
+    }
+  };
+
+  const handleAddGuest = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${API}/guests`, guestData);
+      setGuests([...guests, response.data]);
+      setShowAddGuest(false);
+      setGuestData({
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        id_proof: ''
+      });
+    } catch (error) {
+      alert('Error adding guest: ' + error.response?.data?.detail || 'Unknown error');
+    }
+  };
+
+  const handleAddBooking = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${API}/bookings`, {
+        ...bookingData,
+        guests_count: parseInt(bookingData.guests_count) || 1,
+        advance_payment: parseFloat(bookingData.advance_payment) || 0
+      });
+      setBookings([...bookings, response.data]);
+      setShowAddBooking(false);
+      setBookingData({
+        room_id: '',
+        guest_name: '',
+        guest_email: '',
+        guest_phone: '',
+        guest_address: '',
+        guest_id_proof: '',
+        check_in: '',
+        check_out: '',
+        guests_count: 1,
+        special_requests: '',
+        advance_payment: 0
+      });
+      loadDashboardData();
+    } catch (error) {
+      alert('Error adding booking: ' + error.response?.data?.detail || 'Unknown error');
+    }
+  };
+
+  const handleAddExpense = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${API}/expenses`, {
+        ...expenseData,
+        amount: parseFloat(expenseData.amount)
+      });
+      setExpenses([...expenses, response.data]);
+      setShowAddExpense(false);
+      setExpenseData({
+        category: '',
+        amount: '',
+        description: '',
+        date: ''
+      });
+      loadDashboardData();
+    } catch (error) {
+      alert('Error adding expense: ' + error.response?.data?.detail || 'Unknown error');
+    }
+  };
+
+  const handleStatusUpdate = async (booking, newStatus) => {
+    setSelectedBooking(booking);
+    setStatusUpdateData({
+      status: newStatus,
+      additional_charges: 0,
+      advance_payment_received: 0,
+      payment_method: 'cash',
+      notes: ''
+    });
+    setShowStatusUpdate(true);
+  };
+
+  const submitStatusUpdate = async () => {
+    try {
+      const response = await axios.put(`${API}/bookings/${selectedBooking.booking_id}/status`, statusUpdateData);
+      
+      setShowStatusUpdate(false);
+      loadDashboardData();
+      
+      if (statusUpdateData.status === 'checked_out' && response.data.balance_due > 0) {
+        alert(`Checkout completed! Balance due: ${settings.currency_symbol}${response.data.balance_due}`);
+      } else if (statusUpdateData.status === 'checked_out') {
+        alert('Checkout completed successfully!');
+      }
+    } catch (error) {
+      alert('Error updating booking status: ' + error.response?.data?.detail || 'Unknown error');
+    }
+  };
+
+  const updateBookingStatus = async (bookingId, newStatus) => {
+    if (newStatus === 'checked_out' || newStatus === 'cancelled' || newStatus === 'checked_in') {
+      handleStatusUpdate(bookings.find(b => b.booking_id === bookingId), newStatus);
+    }
+  };
+
+  const checkAvailability = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${API}/rooms/availability`, availabilityDates);
+      setAvailableRooms(response.data);
+    } catch (error) {
+      alert('Error checking availability: ' + error.response?.data?.detail || 'Unknown error');
+    }
+  };
+
+  const handleUpdateSettings = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.put(`${API}/settings`, settings);
+      setSettings(response.data);
+      loadDashboardData();
+      alert('Settings updated successfully!');
+    } catch (error) {
+      alert('Error updating settings: ' + error.response?.data?.detail || 'Unknown error');
+    }
   };
 
   if (!isAuthenticated) {
@@ -302,55 +557,84 @@ const App = () => {
                 </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Rooms View */}
-        {currentView === 'rooms' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">Rooms</h2>
-            </div>
+            {/* Room Availability Check */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Check Room Availability</h3>
+                <form onSubmit={checkAvailability} className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
+                    <input
+                      type="date"
+                      value={availabilityDates.check_in}
+                      onChange={(e) => setAvailabilityDates({...availabilityDates, check_in: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
+                    <input
+                      type="date"
+                      value={availabilityDates.check_out}
+                      onChange={(e) => setAvailabilityDates({...availabilityDates, check_out: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Room Type</label>
+                    <select
+                      value={availabilityDates.room_type}
+                      onChange={(e) => setAvailabilityDates({...availabilityDates, room_type: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">All Types</option>
+                      <option value="single">Single</option>
+                      <option value="double">Double</option>
+                      <option value="triple">Triple</option>
+                      <option value="suite">Suite</option>
+                      <option value="deluxe">Deluxe</option>
+                    </select>
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      type="submit"
+                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      Check Availability
+                    </button>
+                  </div>
+                </form>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {rooms.map((room) => (
-                <div key={room.room_id} className="bg-white overflow-hidden shadow rounded-lg">
-                  <img 
-                    src="https://images.unsplash.com/photo-1544097935-909a55214c81" 
-                    alt="Room" 
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-6">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-medium text-gray-900">Room {room.room_number}</h3>
-                        <p className="text-sm text-gray-500 capitalize">{room.room_type}</p>
-                        <p className="text-lg font-semibold text-gray-900">{settings.currency_symbol}{room.price_per_night}/night</p>
-                      </div>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        room.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {room.status}
-                      </span>
-                    </div>
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-600">Max Occupancy: {room.max_occupancy}</p>
-                      <p className="text-sm text-gray-600">Amenities: {room.amenities.join(', ')}</p>
+                {availableRooms.length > 0 && (
+                  <div className="mt-6">
+                    <h4 className="text-md font-medium text-gray-900 mb-3">Available Rooms</h4>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {availableRooms.map((room) => (
+                        <div key={room.room_id} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h5 className="font-medium text-gray-900">Room {room.room_number}</h5>
+                              <p className="text-sm text-gray-500 capitalize">{room.room_type}</p>
+                              <p className="text-sm text-gray-600">{settings.currency_symbol}{room.price_per_night}/night</p>
+                            </div>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Available
+                            </span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
-              ))}
+                )}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Other Views Placeholder */}
-        {currentView !== 'dashboard' && currentView !== 'rooms' && (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 capitalize">{currentView}</h2>
-            <p className="text-gray-600 mt-4">This section is under development.</p>
-          </div>
-        )}
+        {/* Continue in next part due to character limit... */}
       </div>
     </div>
   );

@@ -1091,8 +1091,25 @@ const App = () => {
                       <h4 className="font-medium text-gray-800">Booking Details</h4>
                       <p className="text-sm text-gray-600">Guest: {selectedBooking?.guest_name}</p>
                       <p className="text-sm text-gray-600">Room: {selectedBooking?.room_number}</p>
-                      <p className="text-sm text-gray-600">Amount: ${selectedBooking?.total_amount}</p>
+                      <p className="text-sm text-gray-600">Total: {settings.currency_symbol}{selectedBooking?.total_amount}</p>
+                      <p className="text-sm text-gray-600">Advance Paid: {settings.currency_symbol}{selectedBooking?.advance_payment || 0}</p>
                     </div>
+                    
+                    {statusUpdateData.status === 'checked_in' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Additional Advance Payment ({settings.currency_symbol})</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={statusUpdateData.advance_payment_received}
+                          onChange={(e) => setStatusUpdateData({...statusUpdateData, advance_payment_received: parseFloat(e.target.value) || 0})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="0.00"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Any additional advance payment received during check-in</p>
+                      </div>
+                    )}
                     
                     {statusUpdateData.status === 'checked_out' && (
                       <div>

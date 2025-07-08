@@ -152,6 +152,21 @@ class SaleCreate(BaseModel):
     payment_method: str
     date: date
 
+class BookingStatusUpdate(BaseModel):
+    status: str
+    additional_charges: float = 0.0
+    payment_method: str = "cash"
+    notes: str = ""
+
+class PaymentBalance(BaseModel):
+    booking_id: str
+    room_charges: float
+    additional_charges: float
+    total_amount: float
+    paid_amount: float
+    balance_due: float
+    payment_status: str
+
 class AvailabilityCheck(BaseModel):
     check_in: date
     check_out: date

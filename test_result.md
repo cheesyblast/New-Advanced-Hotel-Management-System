@@ -285,6 +285,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "Booking creation interface with status management buttons"
+      - working: true
+        agent: "testing"
+        comment: "Booking management UI is working correctly. The enhanced booking status management features (Check In, Check Out, Cancel buttons) are visible in the UI. The improved booking creation system allows manual entry of guest information and the number of guests field is optional as required."
 
   - task: "Expense Management UI"
     implemented: true

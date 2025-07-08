@@ -821,7 +821,7 @@ const App = () => {
                           <div className="text-sm text-gray-500">
                             <p>${booking.total_amount}</p>
                           </div>
-                          <div className="flex space-x-2">
+                          <div className="flex flex-col space-y-2">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               booking.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
                               booking.status === 'checked_in' ? 'bg-green-100 text-green-800' :
@@ -830,22 +830,32 @@ const App = () => {
                             }`}>
                               {booking.status}
                             </span>
-                            {booking.status === 'confirmed' && (
-                              <button
-                                onClick={() => updateBookingStatus(booking.booking_id, 'checked_in')}
-                                className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700"
-                              >
-                                Check In
-                              </button>
-                            )}
-                            {booking.status === 'checked_in' && (
-                              <button
-                                onClick={() => updateBookingStatus(booking.booking_id, 'checked_out')}
-                                className="text-xs bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700"
-                              >
-                                Check Out
-                              </button>
-                            )}
+                            <div className="flex space-x-1">
+                              {booking.status === 'confirmed' && (
+                                <button
+                                  onClick={() => updateBookingStatus(booking.booking_id, 'checked_in')}
+                                  className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700"
+                                >
+                                  Check In
+                                </button>
+                              )}
+                              {booking.status === 'checked_in' && (
+                                <button
+                                  onClick={() => updateBookingStatus(booking.booking_id, 'checked_out')}
+                                  className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+                                >
+                                  Check Out
+                                </button>
+                              )}
+                              {(booking.status === 'confirmed' || booking.status === 'checked_in') && (
+                                <button
+                                  onClick={() => updateBookingStatus(booking.booking_id, 'cancelled')}
+                                  className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+                                >
+                                  Cancel
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>

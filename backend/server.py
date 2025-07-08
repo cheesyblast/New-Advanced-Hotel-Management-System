@@ -573,24 +573,57 @@ async def get_booking(booking_id: str):
             detail="Failed to retrieve booking"
         )
 
-@api_router.put("/bookings/{booking_id}/status")
-async def update_booking_status(booking_id: str, status: str, token_data: dict = Depends(verify_token)):
+@api_router.put("/bookings/{booking_id}/status", response_model=PaymentBalance)
+async def update_booking_status(booking_id: str, status_update: BookingStatusUpdate, token_data: dict = Depends(verify_token)):
     try:
         booking = await db.bookings.find_one({"booking_id": booking_id})
         if not booking:
             raise HTTPException(status_code=404, detail="Booking not found")
         
-        if status not in ["confirmed", "cancelled", "checked_in", "checked_out"]:
+        if status_update.status not in ["confirmed", "cancelled", "checked_in", "checked_out"]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid booking status"
             )
         
+        # Update booking status
         await db.bookings.update_one(
             {"booking_id": booking_id},
-            {"$set": {"status": status}}
+            {"$set": {"status": status_update.status}}
         )
-        return {"message": "Booking status updated successfully"}
+        
+        # Calculate payment balance for checkout
+        room_charges = booking["total_amount"]
+        additional_charges = status_update.additional_charges
+        total_amount = room_charges + additional_charges
+        paid_amount = room_charges  # Assuming room charges were paid on booking
+        balance_due = additional_charges
+        
+        # If there are additional charges, create a new sale record
+        if additional_charges > 0:
+            additional_sale = Sale(
+                booking_id=booking_id,
+                amount=additional_charges,
+                payment_method=status_update.payment_method,
+                date=datetime.utcnow().date()
+            )
+            
+            sale_dict_for_db = additional_sale.dict()
+            sale_dict_for_db["date"] = datetime.combine(additional_sale.date, datetime.min.time())
+            await db.sales.insert_one(sale_dict_for_db)
+        
+        # Prepare payment balance response
+        payment_balance = PaymentBalance(
+            booking_id=booking_id,
+            room_charges=room_charges,
+            additional_charges=additional_charges,
+            total_amount=total_amount,
+            paid_amount=paid_amount + (additional_charges if status_update.status == "checked_out" else 0),
+            balance_due=balance_due if status_update.status != "checked_out" else 0.0,
+            payment_status="paid" if balance_due == 0 else "pending"
+        )
+        
+        return payment_balance
     except HTTPException:
         raise
     except Exception as e:

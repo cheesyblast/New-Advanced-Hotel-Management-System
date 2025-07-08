@@ -65,7 +65,8 @@ const App = () => {
     check_in: '',
     check_out: '',
     guests_count: 1,
-    special_requests: ''
+    special_requests: '',
+    advance_payment: 0
   });
 
   const [showStatusUpdate, setShowStatusUpdate] = useState(false);
@@ -73,6 +74,7 @@ const App = () => {
   const [statusUpdateData, setStatusUpdateData] = useState({
     status: '',
     additional_charges: 0,
+    advance_payment_received: 0,
     payment_method: 'cash',
     notes: ''
   });

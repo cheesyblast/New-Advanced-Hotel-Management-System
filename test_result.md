@@ -315,3 +315,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Hotel Management System implemented with all core features. Created admin user (admin/admin123). Need to test backend APIs before frontend testing."
+  - agent: "testing"
+    message: "All backend APIs have been tested successfully. Fixed issues with date handling in MongoDB by converting date objects to datetime objects. All high priority tasks are working correctly: Admin Authentication, Room Management, Guest Management, Booking System, and Dashboard Statistics."

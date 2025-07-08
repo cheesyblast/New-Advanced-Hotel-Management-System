@@ -320,3 +320,5 @@ agent_communication:
     message: "Hotel Management System implemented with all core features. Created admin user (admin/admin123). Need to test backend APIs before frontend testing."
   - agent: "testing"
     message: "All backend APIs have been tested successfully. Fixed issues with date handling in MongoDB by converting date objects to datetime objects. All high priority tasks are working correctly: Admin Authentication, Room Management, Guest Management, Booking System, and Dashboard Statistics."
+  - agent: "testing"
+    message: "Found critical issue with frontend: Login API works correctly, but frontend is not redirecting to dashboard after successful login. Backend returns a valid JWT token, but the frontend remains on the login page. This is likely due to a conflict between the standalone bson package and the bson module that comes with pymongo in the backend."
